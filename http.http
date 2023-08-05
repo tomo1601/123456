@@ -1,0 +1,79 @@
+GET http://localhost:5000/
+###
+GET http://localhost:5000/cobcategory
+
+
+###
+GET http://localhost:5000/api/auth/
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MDg4MjYzMiwiZXhwIjoxNjkxNDg3NDMyfQ.KeUD2S9sSqpaO2LW68IIXPgHVD93lOJX_21oQFp84xA
+
+###
+Post http://localhost:5000/api/auth/register
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MDg4MjYzMiwiZXhwIjoxNjkxNDg3NDMyfQ.KeUD2S9sSqpaO2LW68IIXPgHVD93lOJX_21oQFp84xA
+
+{
+    "username": "Cx123456789102",
+    "password": "123456"
+}
+
+###
+Post http://localhost:5000/api/auth/login/
+Content-Type: application/json
+
+{
+    "username": "vq12346",
+    "password": "123456"
+}
+###
+GET http://localhost:5000/api/post
+
+###
+GET http://localhost:5000/api/post/123
+
+###
+GET http://localhost:5000/api/post/category/design-art-multimedia
+
+
+### 
+GET http://localhost:5000/api/user/jobs-profile/8
+
+### 
+GET http://localhost:5000/api/ntd/company-profile/8
+
+
+###
+GET http://localhost:5000/api/user/resume/headline/8
+
+
+###
+GET http://localhost:5000/api/user/resume/key-skill/8
+
+###
+GET http://localhost:5000/api/user/resume/employment/8
+
+###
+GET http://localhost:5000/api/user/resume/education/8
+
+###
+GET http://localhost:5000/api/user/resume/it-skill/8
+
+###
+GET http://localhost:5000/api/user/resume/project/8
+
+###
+GET http://localhost:5000/api/user/resume/profile-sumary/8
+
+
+/// /:id/:property   profile / work / white-paper / presentation / patent / certification
+###
+GET http://localhost:5000/api/user/resume/accomplishment/8/work
+
+/// get accompkimrnt by userID
+###
+GET http://localhost:5000/api/user/resume/accomplishment/8
+
+
+###
+GET http://localhost:5000/api/user/resume/desired/8
