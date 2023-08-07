@@ -82,4 +82,4 @@ GET http://localhost:5000/api/user/resume/desired/8
 GET http://localhost:5000/api/user/resume/personal-detail/8
 
 ###
-GET http://localhost:5000/api/user/resume/attack-resume/?id
+GET http://localhost:5000/api/user/resume/attack-resume/8
