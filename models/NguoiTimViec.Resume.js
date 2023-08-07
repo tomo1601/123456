@@ -224,7 +224,7 @@ const getDesiredCareer = async (request) => {
 }
 
 const getPersonDetail = async (request) => {
-    let sqlQuery = 'select resumeId, industry, department, position, jobType, employmentType, preferedShift, avaliablityToJoin, desiredLocation, desiredIndustry from Web_Resume_Desired where resumeId = @resumeId '
+    let sqlQuery = 'select resumeId, dateOfbirth, gender, pernanentAddress, homeTown, pinCode, marriedStatus, passPort, permitCountry from Web_Resume_PersonalDetail where resumeId = @resumeId '
     const resultResumeDesired = await request.query(sqlQuery)
 
     if(resultResumeDesired.recordset.length ===0 ) return -1
@@ -232,7 +232,7 @@ const getPersonDetail = async (request) => {
 }
 
 const getAttackResume = async (request) => {
-    let sqlQuery = 'select resumeId, industry, department, position, jobType, employmentType, preferedShift, avaliablityToJoin, desiredLocation, desiredIndustry from Web_Resume_Desired where resumeId = @resumeId '
+    let sqlQuery = 'select resumeId, mediaId from Web_Resume_AttackResume where resumeId = @resumeId '
     const resultResumeDesired = await request.query(sqlQuery)
 
     if(resultResumeDesired.recordset.length ===0 ) return -1
@@ -244,5 +244,5 @@ module.exports = {
     getResumeId, getResumeHeadline, getResumeKeySkill, getResumeEmployment, getResumeEducation,
     getResumeItSkill, getResumeProject, getResumeProfileSumary, getAccomplishmentProfile, getAccomplishmentId,
     getAccomplishmentWork, getAccomplishmentWhitePaper, getAccomplishmentPresentation, getAccomplishmentPatent,
-    getAccomplishmentCertification, getDesiredCareer, 
+    getAccomplishmentCertification, getDesiredCareer, getPersonDetail, getAttackResume
 }
