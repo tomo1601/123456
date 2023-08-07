@@ -5,7 +5,7 @@ const {
     getResumeId, getResumeHeadline, getResumeKeySkill, getResumeEmployment, getResumeEducation,
     getResumeItSkill, getResumeProject, getResumeProfileSumary, getAccomplishmentProfile, getAccomplishmentId,
     getAccomplishmentWork, getAccomplishmentWhitePaper, getAccomplishmentPresentation, getAccomplishmentPatent,
-    getAccomplishmentCertification, getDesiredCareer,
+    getAccomplishmentCertification, getDesiredCareer, getPersonDetail, getAttackResume
       } = require('../models/NguoiTimViec.Resume')
 
 router.get('/jobs-profile/:id', async(req, res) => {
@@ -274,6 +274,44 @@ router.get('/resume/desired/:id', async (req, res) => {
         if(resultResumeDesired===-1) res.status(200).json({success: true, Desired: null });
         else 
         res.status(200).json({success: true, Desired: resultResumeDesired[0] });
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: "Internal server error!"})
+    }
+})
+
+router.get('/resume/personal-detail/:id', async (req, res) => {
+    
+    const request = new sql.Request();
+    try {
+
+        const result = await getResumeId(req.params.id, request)
+        request.input('resumeId', sql.Int, result)
+        
+        const resultResumeDetail = await getPersonDetail(request)
+        if(resultResumeDetail===-1) res.status(200).json({success: true, detail: null });
+        else 
+        res.status(200).json({success: true, detail: resultResumeDetail[0] });
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: "Internal server error!"})
+    }
+})
+
+router.get('/resume/attack-resume/:id', async (req, res) => {
+    
+    const request = new sql.Request();
+    try {
+
+        const result = await getResumeId(req.params.id, request)
+        request.input('resumeId', sql.Int, result)
+        
+        const attackResume = await getAttackResume(request)
+        if(attackResume===-1) res.status(200).json({success: true, attackResume: null });
+        else 
+        res.status(200).json({success: true, attackResume: attackResume[0] });
     }
     catch (error) {
         console.log(error)
