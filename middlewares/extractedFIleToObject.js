@@ -51,7 +51,6 @@ const extractFileWordToObject = async (file) => {
     const content = fs.readFileSync('files/JD-NHANVIENKYTHUATLAYOUT.docx');
     
     const zip = new PizZip();
-
     zip.load(content);
 
     // Create a new Docxtemplater instance with the pizzip zip
@@ -60,15 +59,13 @@ const extractFileWordToObject = async (file) => {
     // Render the content to extract text
     const extractedText = doc.getFullText();
 
-
     console.log(extractedText);
     
-    const substring = "TUYỂN DỤNG";
-    const  index= extractedText.indexOf(substring)
-    console.log(index);
+    const list_Field = ["Mô tả", "Mô tả: ", "Mô tả công việc", "Mô tả công việc: "]
+    const vt = await searchViTriLamViec(extractedText)
+    console.log(vt)
 
-
-    let tinTuyenDung = {
+    /* let tinTuyenDung = {
         congViec: "",
         hinhThucLamViec: "",
         diaDiemLamViec: "",
@@ -82,13 +79,8 @@ const extractFileWordToObject = async (file) => {
         tinhThanhPho: "",
         quanHuyen: "",
         phuongXa: ""
-    }
-
-    const list_Field = ["Mô tả", "Mô tả: ", "Mô tả công việc", "Mô tả công việc: "]
-    const vt = await searchViTriLamViec(extractedText)
-    console.log(vt)
-
-    
+    } */
+ 
 }
 module.exports = {
     extractFileWordToObject
