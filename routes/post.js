@@ -3,6 +3,8 @@ const router = express.Router()
 const sql = require("mssql");
 const {getJobs} = require('../models/Jobs')
 
+const {extractFileWordToObject} = require('../middlewares/extractedFIleToObject')
+
 const generateWhereOrSql = (nameCol, arr, request, isRenameTale, name) => {
     const arrays = arr;
     let queryWhere = '';
@@ -214,6 +216,10 @@ router.get('/positions/:position', async (req, res) => {
         console.log(error)
         res.status(500).json({success: false, message: 'Internal server error!'})
     }
+})
+
+router.post('/extractFile', async (req, res) => {
+    extractFileWordToObject()
 })
 
 module.exports = router
