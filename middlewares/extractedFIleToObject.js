@@ -1,6 +1,7 @@
 const fs = require('fs');
 const PizZip  = require('pizzip');
 const Docxtemplater = require('docxtemplater');
+const mammoth = require('mammoth')
 
 const getHeadIndex = (arr, text, removeTextTitle) => {
     for(const a of arr) {
@@ -16,13 +17,15 @@ const getHeadIndex = (arr, text, removeTextTitle) => {
 const getEndIndex = (arr, text) => {
 
     let indexResult =  text.indexOf(arr[0])
+    let wordLength = 0
     for(const a of arr) {
         const index = text.indexOf(a)
-        if(index!==-1 && index< indexResult){
-            indexResult= index;
+        if(index>0 && index< indexResult){
+            indexResult = index;
+            wordLength = a.length
         }
     }
-    return indexResult;
+    return {index:indexResult, length: wordLength};
 }
 
 
@@ -35,10 +38,10 @@ const searchViTriLamViec = async(text) => {
     const textRemain = text.substring(indexVt)
     
     if(indexVt===-1){
-        return 'Không tìm được vị trí làm việc trong văn bản!'
+        return ''
     }
     else {
-        const indexEnd = getEndIndex(stopWord, textRemain) + indexVt
+        const indexEnd = getEndIndex(stopWord, textRemain).index + indexVt
         const result = text.substring(indexVt, indexEnd).trim()
         return result
     }
@@ -73,7 +76,7 @@ const searchHinhThucLamViec = async(text) => {
     else if(fullTimeIndex!==-1){
         return 'Full-time'
     }
-    return 'Fuu-time'
+    return 'Full-time'
 } 
 
 const searchDiaDiemLamViec = async(text) => {
@@ -81,49 +84,96 @@ const searchDiaDiemLamViec = async(text) => {
     const listLocationKeyWord = ['Địa điểm làm việc cụ thể', 'địa điểm làm việc cụ thể','Địa điểm làm việc: ', 'địa điểm làm việc: ', 'Địa điểm làm việc', 'địa điểm làm việc', 'Địa điểm làm việc cụ thể', 
                                  'địa điểm làm việc cụ thể', 'Chỗ làm việc', 'chỗ làm việc', 'Nơi làm việc', 'nơi làm việc', 'Văn phòng', 'văn phòng', 'Cơ sở:', 'cơ sở:', 'Trụ sở chính', 'trụ sở chính', 'Địa điểm:', 'địa điểm:', 'Địa điểm', 'địa điểm', 
                                  'Không gian văn phòng', 'Work venue', 'work venue', 'Office space', 'office space', 'Workplace', 'workplace', 'Work location', 'work location', 'Workstation', 'workstation', 
-                                 'Headquarters', 'headquarters', 'Headquarter', 'headquarter', 'Office', 'office', 'Job site', 'job site'  ]
+                                 'Headquarters', 'headquarters', 'Headquarter', 'headquarter', 'Office', 'office', 'Job site', 'job site' ]
 
-    const stopWord = ['.','\n', 'với', 'có', 'cà', 'được', 'with', 'have']
+    const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</ul>","</ol>","</li>","</table>","</tr>","</td>","</th>","</iframe>"];
 
 
     const headIndex = getHeadIndex(listLocationKeyWord, text, true)
     const textRemain = text.substring(headIndex)
     
     if(headIndex===-1){
-        return 'Không tìm được vị trí làm việc trong văn bản!'
+        return ''
     }
     else {
-        const indexEnd = getEndIndex(stopWord, textRemain) + headIndex
+        const indexEnd = getEndIndex(closingTags, textRemain).index + headIndex
         const result = text.substring(headIndex, indexEnd).trim()
         return result
     }
     
 } 
 
+
+const searchThoiHanNopHoSo = async (text) => {
+    const listTimeKeyWord = ['Thời hạn ứng tuyển', 'thời hạn ứng tuyển', 'Thời gian kết thúc ứng tuyển', 'thời gian kết thúc ứng tuyển', 'Hạn cuối nộp đơn', 'hạn cuối nộp đơn', 'hạn cuối nộp hồ sơ','hạn cuối nộp hồ sơ',
+                             'Hạn chót nộp đơn', 'hạn chót nộp đơn', 'Thời điểm kết thúc ứng tuyển', 'thời điểm kết thúc ứng tuyển', 'Ngày kết thúc nộp đơn', 'ngày kết thúc nộp đơn', 
+                             'Hạn nộp đơn ứng tuyển', 'hạn nộp đơn ứng tuyển', 'Hạn nộp hồ sơ ứng tuyển', 'hạn nộp hồ sơ ứng tuyển', 'Thời hạn nộp đơn', 'thời hạn nộp đơn', 'Thời gian kết thúc nộp hồ sơ', 
+                             'thời gian kết thúc nộp hồ sơ', 'Ngày cuối nộp hồ sơ', 'ngày cuối nộp hồ sơ', 'Ngày kết thúc nộp đơn', 'ngày kết thúc nộp đơn', 'Ngày cuối cùng nộp hồ sơ', 'ngày cuối cùng nộp hồ sơ', 'Hạn nộp đơn', 
+                             'hạn nộp đơn', 'Application deadline', 'application deadline', 'Submission deadline', 'submission deadline', 'Closing date for applications', 'closing date for applications', 'Application cutoff date', 
+                             'application cutoff date', 'Last date to apply', 'last date to apply', 'Application end date', 'application end date', 'Final date for application submission', 'final date for application submission', 
+                             'Application due date', 'application due date', 'Deadline for applying', 'deadline for applying', "Expiration date", "expiration date" ]
+
+    const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</ul>","</ol>","</li>","</table>","</tr>","</td>","</th>","</iframe>"];
+
+
+    const headIndex = getHeadIndex(listTimeKeyWord, text, true)
+    const textRemain = text.substring(headIndex)
+
+    if(headIndex===-1){
+        return ''
+    }
+    else {
+        const indexEnd = getEndIndex(closingTags, textRemain).index + headIndex
+        const result = text.substring(headIndex, indexEnd).trim()
+        return result
+    }
+}
+
+const removeCloseTagsExcess = (text) => {
+    const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</ul>","</ol>","</li>","</table>","</tr>","</td>","</th>","</iframe>", ':', ',', ',',';','?'];
+
+    let resultText = text.trim()
+    for(const a of closingTags) {
+        const index = resultText.indexOf(a)
+        if(index===0){
+            resultText= resultText.replace(a, '', 1);
+        }
+    }
+    return resultText;
+}
+
+
+
 const extractFileWordToObject = async (file) => {
       
     const content = fs.readFileSync('files/JD-NHANVIENKYTHUATLAYOUT.docx');
     
+    //get text content
     const zip = new PizZip();
     zip.load(content);
-
-    // Create a new Docxtemplater instance with the pizzip zip
     const doc = new Docxtemplater().loadZip(zip);
-
-    // Render the content to extract text
     const extractedText = doc.getFullText();
 
-    console.log(extractedText);
+    //get html text
+    let textHtml
+    await mammoth.convertToHtml({ buffer: content })
+    .then((result) => {
+      textHtml = result.value
+    })
+    .catch((error) => {
+      console.error('Error converting document:', error);
+    });
     
     const list_Field = ["Mô tả", "Mô tả: ", "Mô tả công việc", "Mô tả công việc: "]
     const vt = await searchViTriLamViec(extractedText)
     const ht = await searchHinhThucLamViec(extractedText)
-    const address = await searchDiaDiemLamViec(extractedText)
+    const address = await searchDiaDiemLamViec(textHtml)
+    const time = await searchThoiHanNopHoSo(textHtml)
 
     let tinTuyenDung = {
         congViec: vt,
         hinhThucLamViec: ht,
-        diaDiemLamViec: address,
+        diaDiemLamViec: removeCloseTagsExcess(address).trim(),
         thoiHanNopHoSo: "",
         chitietcongviec: {
             yeucauungvien: "",
@@ -137,6 +187,7 @@ const extractFileWordToObject = async (file) => {
     }
 
     console.log(tinTuyenDung)
+    console.log(time)
 
  
 }
