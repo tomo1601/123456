@@ -129,6 +129,35 @@ const searchThoiHanNopHoSo = async (text) => {
     }
 }
 
+const searchYeuCauUngVien = async (text) => {
+    const listYeuCauKeyWord = ['Yêu cầu ứng viên', 'yêu cầu ứng viên', 'Tiêu chí công việc', 'tiêu chí công việc', 'Điều kiện ứng tuyển', 'điều kiện ứng tuyển', 'Kỹ năng và tiêu chí cần thiết','kỹ năng và tiêu chí cần thiết',
+                             'Yêu cầu bắt buộc', 'yêu cầu bắt buộc', 'Đặc điểm cần có của ứng viên', 'đặc điểm cần có của ứng viên', 'Điều kiện tiên quyết công việc', 'điều kiện tiên quyết công việc', 
+                             'Tiêu chí ứng viên', 'tiêu chí ứng viên', 'Yêu cầu cho người ứng tuyển', 'yêu cầu cho người ứng tuyển', 'Yêu cầu cụ thể của công việc', 'yêu cầu cụ thể của công việc', 'Yêu cầu công việc', 
+                             'yêu cầu công việc', 'Tiêu chí làm việc', 'tiêu chí làm việc', 'Năng lực yêu cầu', 'năng lực yêu cầu', 'NĐặc điểm cần có trong công việc', 'đặc điểm cần có trong công việc', 'Yêu cầu cho vị trí', 
+                             'yêu cầu cho vị trí', 'Có kiến thức', 'có kiến thức', 'Có kiến thức về', 'có kiến thức về', 'Cần có kiến thức', 'cần có kiến thức', 'Yêu cầu', 'yêu cầu', 'Candidate requirements', 'candidate requirements', 'Job qualifications', 'job qualifications', 'Applicant prerequisites', 'applicant prerequisites', 'Essential skills and qualifications', 
+                             'essential skills and qualifications', 'Required qualifications', 'required qualifications', 'Necessary candidate trai', 'necessary candidate trai', 'Job prerequisite', 'job prerequisite', 
+                             'Candidate criteria', 'candidate criteria', 'Job-specific requirement', 'job-specific requirement', "Job requirement", "job requirement", 'Position prerequisites', 'position prerequisites', 
+                             'Work qualifications', 'work qualifications', 'Essential job skills', 'essential job skills', 'Required competencies', 'required competencies', 'necessary job traits', 'Necessary job traits', 
+                             'Employment prerequisite', 'employment prerequisite' ]
+
+    const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</ul>","</ol>","</li>","</table>","</tr>","</td>","</th>","</iframe>"];
+
+
+    const headIndex = getHeadIndex(listYeuCauKeyWord, text, false)
+    const textRemain = text.substring(headIndex.index)
+
+
+    if(headIndex===-1){
+        return ''
+    }
+    else {
+        const indexEnd = getEndIndex(closingTags, textRemain).index + headIndex.index
+        const result = text.substring(headIndex.index, indexEnd).trim()
+        return result
+    }
+}
+
+
 const removeCloseTagsExcess = (text) => {
     const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</ul>","</ol>","</li>","</table>","</tr>","</td>","</th>","</iframe>", ':', ',', ',',';','?'];
 
@@ -169,14 +198,15 @@ const extractFileWordToObject = async (file) => {
     const ht = await searchHinhThucLamViec(extractedText)
     const address = await searchDiaDiemLamViec(textHtml)
     const time = await searchThoiHanNopHoSo(textHtml)
+    const yc = await searchYeuCauUngVien(textHtml)
 
     let tinTuyenDung = {
         congViec: vt,
         hinhThucLamViec: ht,
         diaDiemLamViec: removeCloseTagsExcess(address).trim(),
-        thoiHanNopHoSo: "",
+        thoiHanNopHoSo: removeCloseTagsExcess(time).trim(),
         chitietcongviec: {
-            yeucauungvien: "",
+            yeucauungvien: removeCloseTagsExcess(yc).trim(),
             motacongviec: "",
             thongtinkhac: ""
         },
