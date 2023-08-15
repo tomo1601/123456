@@ -212,7 +212,7 @@ const searchMoTaCongViec = async (text, arr) => {
         }
     }
 
-    const resultmota = $(`p:contains(${mota.child?mota.child:mota.parent})`).nextUntil((index, element) => {
+    const resultmota = $(`:contains(${mota.child?mota.child:mota.parent})`).nextUntil((index, element) => {
         const text = $(element).text();
         return listKeyWord.some(condition => text.includes(condition));
       })
@@ -240,7 +240,7 @@ const searchThongTinKhac = async (text, arr) => {
         }
     }
 
-    const resultthongTinKhac = $(`p:contains(${thongTinKhac.child?thongTinKhac.child:thongTinKhac.parent})`).nextUntil((index, element) => {
+    const resultthongTinKhac = $(`:contains(${thongTinKhac.child?thongTinKhac.child:thongTinKhac.parent})`).nextUntil((index, element) => {
         const text = $(element).text();
         return listKeyWord.some(condition => text.includes(condition));
       })
@@ -256,7 +256,7 @@ const searchMucLuong = async (text, arr) => {
     const listMucLuongKW = keywordData.listMucLuong
 
     const $ = cheerio.load(text);
-    const mucLuong = getTagIncludeKeyword(listMucLuongKW, text, 'li')
+    const mucLuong = getTagIncludeKeyword(listMucLuongKW, text, 'p')
 
     const arrPart = arr
     const listKeyWord = []
@@ -268,7 +268,7 @@ const searchMucLuong = async (text, arr) => {
         }
     }
 
-    const resultmucLuong = $(`li:contains(${mucLuong.child?mucLuong.child:mucLuong.parent})`).nextUntil((index, element) => {
+    const resultmucLuong = $(`:contains(${mucLuong.child?mucLuong.child:mucLuong.parent})`).nextUntil((index, element) => {
         const text = $(element).text();
         return listKeyWord.some(condition => text.includes(condition));
       })
@@ -358,8 +358,9 @@ const extractFileWordToObject = async (file) => {
     const getDiaDiemLamViec = getTagIncludeKeyword(keywordData.listLocationKeyWord, newHtmltext, 'p')
     const getListThoiHanNopHoSo = getTagIncludeKeyword(keywordData.listTimeKeyWord, newHtmltext, 'p')
     const getMucLuong = getTagIncludeKeyword(keywordData.listMucLuong, newHtmltext, 'p')
+    const getThoiGianLamViec = getTagIncludeKeyword(["Thời gian làm việc"], newHtmltext, 'p')
     
-    const arr = [getMucLuong, getmota, getyeucau, getCongViec, getDiaDiemLamViec, getListThoiHanNopHoSo, getThongTinKhac]
+    const arr = [getMucLuong, getmota, getyeucau, getCongViec, getDiaDiemLamViec, getListThoiHanNopHoSo, getThongTinKhac,getThoiGianLamViec]
     
     const vt = await searchViTriLamViec(newHtmltext)
     const ht = await searchHinhThucLamViec(extractedText)
