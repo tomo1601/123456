@@ -5,6 +5,19 @@ const mammoth = require('mammoth')
 const cheerio = require('cheerio');
 const {keywordData} = require('../models/data');
 
+const getTagIncludeKeyword = (arr, text, tagName) => {
+    const $ = cheerio.load(text)
+    for(const a of arr) {
+        const textContains = `${tagName}:contains("${a}")`
+        const result = $(textContains).first().html();
+        if(result!==null) return {
+            parent: $(textContains).first().html(),
+            child: $(textContains).first().children().html()
+        }
+    }
+    return null;
+}
+
 const getHeadIndex = (arr, text, removeTextTitle) => {
     for(const a of arr) {
         const index = text.indexOf(a)
@@ -30,24 +43,13 @@ const getEndIndex = (arr, text) => {
     return {index:indexResult, length: wordLength};
 }
 
-const genarateTextQuery = (arr) => {
-    const htmlTag = ['p strong', 'p h1', 'p h2', 'p h3', 'p h4', 'p h5', 'p h6', 'p b', 'p em', 'p ul', 'p ol', 'p li', 'p i', 'strong','h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b','em','ul','ol','li', 'i','u', 'p ']
-    let resultText = ''
-    for(const tag of htmlTag){
-        for(const a of arr) {
-            if(tag===htmlTag[htmlTag.length-1]&&a===arr[arr.length-1])
-                resultText+= `${tag}:contains("${a}")`
-            else
-                resultText+= `${tag}:contains("${a}"),`
-        }
-    }
-    return resultText
-
-}
+const loaiBoTheHtml = (text) => {
+    return text.replace(/<\/?[^>]+(>|$)/g, "");
+  }
 
 const searchViTriLamViec = async(text) => {
     const listVTKeyWord = keywordData.listViTriTuyenDungKeyWord
-    const stopWord = ['.', 'với', 'có', 'cà', 'được', 'with', 'have','\n']
+    const stopWord = ['.', 'với', 'có', 'cần', 'được', 'with', 'have', ':', '\n']
 
     const indexVt = getHeadIndex(listVTKeyWord, text, true)
     const textRemain = text.substring(indexVt)
@@ -58,7 +60,21 @@ const searchViTriLamViec = async(text) => {
     else {
         const indexEnd = getEndIndex(stopWord, textRemain).index + indexVt
         const result = text.substring(indexVt, indexEnd).trim()
-        return result
+
+        const $ = cheerio.load(text);
+        const getVTYeuCau = getTagIncludeKeyword(listVTKeyWord, text, 'p')
+
+        if(getVTYeuCau.child!==null){
+            if(result.length>getVTYeuCau.child.length){
+                if(result.includes(getVTYeuCau.child)) return getVTYeuCau.child
+                else return result
+            }
+            else {
+                if(getVTYeuCau.child.includes(result)) return result
+                else return getVTYeuCau.child
+            }
+        }
+        else return result
     }
 
 }
@@ -66,13 +82,8 @@ const searchViTriLamViec = async(text) => {
 const searchHinhThucLamViec = async(text) => {
 
     const listFulltimeKeyWord = keywordData.listFulltimeKeyWord
-
-    const listParttimeKeyWord = [ 'Làm việc bán thời gian', 'làm việc bán thời gian', 'Bán thời gian', 'bán thời gian', 'Việc làm thời vụ', 'việc làm thời vụ', 'Thời vụ', 'thời vụ', 'Làm việc theo ca', 
-                                  'Giờ làm việc linh hoạt', 'làm việc theo ca', 'giờ làm việc linh hoạt', 'Parttime', 'Part-time', 'parttime', 'part-time', 'Flexible work', 'flexible work' ]
-
-    const listRemoteKeyWord = [ 'Làm việc ở nhà', 'làm việc ở nhà', 'Làm việc từ xa', 'làm việc từ xa', 'Làm việc trực tuyến', 'làm việc trực tuyến', 'Làm việc online', 'làm việc online', 
-                                'Không cần đến văn phòng', 'không cần đến văn phòng', 'không gian và thời gian linh hoạt', 'Việc làm từ xa', 'việc làm từ xa', 'Work from home', 'work from home', 'Remote work', 
-                                'remote work', 'Online work', 'online work', 'Virtual work', 'Flexibility in space and time', 'flexibility in space and time', 'Independent work', 'independent work'  ]
+    const listParttimeKeyWord = keywordData.listParttimeKeyWord
+    const listRemoteKeyWord = keywordData.listRemoteKeyWord
 
 
     const fullTimeIndex = getHeadIndex(listFulltimeKeyWord, text, false)
@@ -93,13 +104,8 @@ const searchHinhThucLamViec = async(text) => {
 
 const searchDiaDiemLamViec = async(text) => {
     
-    const listLocationKeyWord = ['Địa điểm làm việc cụ thể', 'địa điểm làm việc cụ thể','Địa điểm làm việc: ', 'địa điểm làm việc: ', 'Địa điểm làm việc', 'địa điểm làm việc', 'Địa điểm làm việc cụ thể', 
-                                 'địa điểm làm việc cụ thể', 'Chỗ làm việc', 'chỗ làm việc', 'Nơi làm việc', 'nơi làm việc', 'Văn phòng', 'văn phòng', 'Cơ sở:', 'cơ sở:', 'Trụ sở chính', 'trụ sở chính', 'Địa điểm:', 'địa điểm:', 'Địa điểm', 'địa điểm', 
-                                 'Không gian văn phòng', 'Work venue', 'work venue', 'Office space', 'office space', 'Workplace', 'workplace', 'Work location', 'work location', 'Workstation', 'workstation', 
-                                 'Headquarters', 'headquarters', 'Headquarter', 'headquarter', 'Office', 'office', 'Job site', 'job site' ]
-
+    const listLocationKeyWord = keywordData.listLocationKeyWord
     const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</ul>","</ol>","</li>","</table>","</tr>","</td>","</th>","</iframe>"];
-
 
     const headIndex = getHeadIndex(listLocationKeyWord, text, true)
     const textRemain = text.substring(headIndex)
@@ -110,20 +116,27 @@ const searchDiaDiemLamViec = async(text) => {
     else {
         const indexEnd = getEndIndex(closingTags, textRemain).index + headIndex
         const result = text.substring(headIndex, indexEnd).trim()
-        return result
-    }
-    
+        const $ = cheerio.load(text);
+
+        const diaDiemLamViec = getTagIncludeKeyword(listLocationKeyWord, text, 'p')
+
+        if(diaDiemLamViec.child!==null){
+            if(result.length>diaDiemLamViec.child.length){
+                if(result.includes(diaDiemLamViec.child)) return diaDiemLamViec.child
+                else return result
+            }
+            else {
+                if(diaDiemLamViec.child.includes(result)||diaDiemLamViec.parent.includes(result)) return result
+                else return diaDiemLamViec.child
+            }
+        }
+        else return result
+    }   
 } 
 
 
 const searchThoiHanNopHoSo = async (text) => {
-    const listTimeKeyWord = ['Thời hạn ứng tuyển', 'thời hạn ứng tuyển', 'Thời gian kết thúc ứng tuyển', 'thời gian kết thúc ứng tuyển', 'Hạn cuối nộp đơn', 'hạn cuối nộp đơn', 'hạn cuối nộp hồ sơ','hạn cuối nộp hồ sơ',
-                             'Hạn chót nộp đơn', 'hạn chót nộp đơn', 'Thời điểm kết thúc ứng tuyển', 'thời điểm kết thúc ứng tuyển', 'Ngày kết thúc nộp đơn', 'ngày kết thúc nộp đơn', 
-                             'Hạn nộp đơn ứng tuyển', 'hạn nộp đơn ứng tuyển', 'Hạn nộp hồ sơ ứng tuyển', 'hạn nộp hồ sơ ứng tuyển', 'Thời hạn nộp đơn', 'thời hạn nộp đơn', 'Thời gian kết thúc nộp hồ sơ', 
-                             'thời gian kết thúc nộp hồ sơ', 'Ngày cuối nộp hồ sơ', 'ngày cuối nộp hồ sơ', 'Ngày kết thúc nộp đơn', 'ngày kết thúc nộp đơn', 'Ngày cuối cùng nộp hồ sơ', 'ngày cuối cùng nộp hồ sơ', 'Hạn nộp đơn', 
-                             'hạn nộp đơn', 'Application deadline', 'application deadline', 'Submission deadline', 'submission deadline', 'Closing date for applications', 'closing date for applications', 'Application cutoff date', 
-                             'application cutoff date', 'Last date to apply', 'last date to apply', 'Application end date', 'application end date', 'Final date for application submission', 'final date for application submission', 
-                             'Application due date', 'application due date', 'Deadline for applying', 'deadline for applying', "Expiration date", "expiration date" ]
+    const listTimeKeyWord = keywordData.listTimeKeyWord
 
     const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</ul>","</ol>","</li>","</table>","</tr>","</td>","</th>","</iframe>"];
 
@@ -137,53 +150,164 @@ const searchThoiHanNopHoSo = async (text) => {
     else {
         const indexEnd = getEndIndex(closingTags, textRemain).index + headIndex
         const result = text.substring(headIndex, indexEnd).trim()
-        return result
+        const $ = cheerio.load(text);
+
+        const thoiGianLamViec = getTagIncludeKeyword(listTimeKeyWord, text, 'p')
+
+        if(thoiGianLamViec.child!==null){
+            if(result.length>thoiGianLamViec.child.length){
+                if(result.includes(thoiGianLamViec.child)) return thoiGianLamViec.child
+                else return result
+            }
+            else {
+                if(thoiGianLamViec.child.includes(result)||thoiGianLamViec.parent.includes(result)) return result
+                else return thoiGianLamViec.child
+            }
+        }
+        else return result
     }
 }
 
-const searchYeuCauUngVien = async (text) => {
-    const listYeuCauKeyWord = ['Yêu cầu ứng viên', 'yêu cầu ứng viên', 'Tiêu chí công việc', 'tiêu chí công việc', 'Điều kiện ứng tuyển', 'điều kiện ứng tuyển', 'Kỹ năng và tiêu chí cần thiết','kỹ năng và tiêu chí cần thiết',
-                             'Yêu cầu bắt buộc', 'yêu cầu bắt buộc', 'Đặc điểm cần có của ứng viên', 'đặc điểm cần có của ứng viên', 'Điều kiện tiên quyết công việc', 'điều kiện tiên quyết công việc', 
-                             'Tiêu chí ứng viên', 'tiêu chí ứng viên', 'Yêu cầu cho người ứng tuyển', 'yêu cầu cho người ứng tuyển', 'Yêu cầu cụ thể của công việc', 'yêu cầu cụ thể của công việc', 'Yêu cầu công việc', 
-                             'yêu cầu công việc', 'Tiêu chí làm việc', 'tiêu chí làm việc', 'Năng lực yêu cầu', 'năng lực yêu cầu', 'NĐặc điểm cần có trong công việc', 'đặc điểm cần có trong công việc', 'Yêu cầu cho vị trí', 
-                             'yêu cầu cho vị trí', 'Có kiến thức', 'có kiến thức', 'Có kiến thức về', 'có kiến thức về', 'Cần có kiến thức', 'cần có kiến thức', 'Yêu cầu', 'yêu cầu', 'Candidate requirements', 'candidate requirements', 'Job qualifications', 'job qualifications', 'Applicant prerequisites', 'applicant prerequisites', 'Essential skills and qualifications', 
-                             'essential skills and qualifications', 'Required qualifications', 'required qualifications', 'Necessary candidate trai', 'necessary candidate trai', 'Job prerequisite', 'job prerequisite', 
-                             'Candidate criteria', 'candidate criteria', 'Job-specific requirement', 'job-specific requirement', "Job requirement", "job requirement", 'Position prerequisites', 'position prerequisites', 
-                             'Work qualifications', 'work qualifications', 'Essential job skills', 'essential job skills', 'Required competencies', 'required competencies', 'necessary job traits', 'Necessary job traits', 
-                             'Employment prerequisite', 'employment prerequisite']
 
-    const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</ul>","</ol>","</li>",".",";",,"</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</table>","</tr>","</td>","</th>","</iframe>"];
+const searchYeuCauUngVien = async (text, arr) => {
+    const listYeuCauKeyWord = keywordData.listYeuCauKeyWord
 
     const $ = cheerio.load(text);
-    $('img').remove();
-    console.log($.html())
-    const yeuCau = $('p:contains("Cần có kiến thức gì để vượt qua phỏng vấn?")').nextUntil('p:contains("Lương")')
-        .map((_, elem) => $(elem).text().trim())
-        .get()
-        .join('\n');
-    const luong = $('li').first().text();
-    const phucLoi = $('ul').first().html();
-    const diaChi = $('p strong:contains("Địa điểm")').parent().html();
-    console.log({
-        yeuCau:yeuCau,
-        luong:luong,
-        phucLoi:phucLoi,
-        diaChi:diaChi,
-    })
+    const yeucau = getTagIncludeKeyword(listYeuCauKeyWord, text, 'p')
 
-    const headIndex = getHeadIndex(listYeuCauKeyWord, text, false)
-    const textRemain = text.substring(headIndex.index)
+    const arrPart = arr
+    const listKeyWord = []
 
-
-    if(headIndex===-1){
-        return ''
+    for( const a of arrPart){
+        if(a!==null){
+            if(a.child!==null) listKeyWord.unshift(a.child)
+            else listKeyWord.unshift(a.parent)
+        }
     }
-    else {
-        const indexEnd = getEndIndex(closingTags, textRemain).index + headIndex.index
-        const result = text.substring(headIndex.index, indexEnd).trim()
-        return result
-    }
+
+    const resultyeuCau = $(`p:contains(${yeucau.child?yeucau.child:yeucau.parent})`).nextUntil((index, element) => {
+        const text = $(element).text();
+        return listKeyWord.some(condition => text.includes(condition));
+      })
+      .map((_, elem) => $(elem).text().trim())
+      .get()
+      .join('\n');
+
+    return resultyeuCau
 }
+
+const searchMoTaCongViec = async (text, arr) => {
+    const listMoTaCongViec = keywordData.listMoTaCongViec
+
+    const $ = cheerio.load(text);
+    const mota = getTagIncludeKeyword(listMoTaCongViec, text, 'p')
+
+    const arrPart = arr
+    const listKeyWord = []
+
+    for( const a of arrPart){
+        if(a!==null){
+            if(a.child!==null) listKeyWord.unshift(a.child)
+            else listKeyWord.unshift(a.parent)
+        }
+    }
+
+    const resultmota = $(`p:contains(${mota.child?mota.child:mota.parent})`).nextUntil((index, element) => {
+        const text = $(element).text();
+        return listKeyWord.some(condition => text.includes(condition));
+      })
+      .map((_, elem) => $(elem).text().trim())
+      .get()
+      .join('\n');
+
+
+    return resultmota
+}
+
+const searchThongTinKhac = async (text, arr) => {
+    const listThongTinKhac = keywordData.listThongTinKhacKeyWord
+
+    const $ = cheerio.load(text);
+    const thongTinKhac = getTagIncludeKeyword(listThongTinKhac, text, 'p')
+
+    const arrPart = arr
+    const listKeyWord = []
+    
+    for( const a of arrPart){
+        if(a!==null){
+            if(a.child!==null) listKeyWord.unshift(a.child)
+            else listKeyWord.unshift(a.parent)
+        }
+    }
+
+    const resultthongTinKhac = $(`p:contains(${thongTinKhac.child?thongTinKhac.child:thongTinKhac.parent})`).nextUntil((index, element) => {
+        const text = $(element).text();
+        return listKeyWord.some(condition => text.includes(condition));
+      })
+      .map((_, elem) => $(elem).text().trim())
+      .get()
+      .join('\n');
+
+
+    return resultthongTinKhac
+}
+
+const searchMucLuong = async (text, arr) => {
+    const listMucLuongKW = keywordData.listMucLuong
+
+    const $ = cheerio.load(text);
+    const mucLuong = getTagIncludeKeyword(listMucLuongKW, text, 'li')
+
+    const arrPart = arr
+    const listKeyWord = []
+    
+    for( const a of arrPart){
+        if(a!==null){
+            if(a.child!==null) listKeyWord.unshift(a.child)
+            else listKeyWord.unshift(a.parent)
+        }
+    }
+
+    const resultmucLuong = $(`li:contains(${mucLuong.child?mucLuong.child:mucLuong.parent})`).nextUntil((index, element) => {
+        const text = $(element).text();
+        return listKeyWord.some(condition => text.includes(condition));
+      })
+      .map((_, elem) => $(elem).text().trim())
+      .get()
+      .join('\n');
+
+    console.log(resultmucLuong)
+    return resultmucLuong
+}
+
+/* const searchMucLuong = async (text, arr) => {
+    const listMucLuongKW = keywordData.listMucLuong
+
+    const $ = cheerio.load(text);
+    const mucLuong = getTagIncludeKeyword(listMucLuongKW, text, 'p')
+
+    const arrPart = arr
+    const listKeyWord = []
+    
+    for( const a of arrPart){
+        if(a !== null){
+            if(a.child !== null) listKeyWord.unshift(a.child)
+            else listKeyWord.unshift(a.parent)
+        }
+    }
+
+    const resultmucLuong = $(`p:contains(${mucLuong.child ? mucLuong.child : mucLuong.parent})`).nextUntil((index, element) => {
+        const text = $(element).text();
+        return listKeyWord.some(condition => text.includes(condition));
+    })
+    .add(`ul:contains(${mucLuong.child ? mucLuong.child : mucLuong.parent})`).find('li')
+    .map((_, elem) => $(elem).text().trim())
+    .get()
+    .join('\n') + '\n';
+
+    console.log(resultmucLuong);
+    return resultmucLuong;
+} */
 
 
 const removeCloseTagsExcess = (text) => {
@@ -220,16 +344,32 @@ const extractFileWordToObject = async (file) => {
     .catch((error) => {
       console.error('Error converting document:', error);
     });
-    
-    const list_Field = ["Mô tả", "Mô tả: ", "Mô tả công việc", "Mô tả công việc: "]
-    const vt = await searchViTriLamViec(extractedText)
-    const ht = await searchHinhThucLamViec(extractedText)
-    const address = await searchDiaDiemLamViec(textHtml)
-    const time = await searchThoiHanNopHoSo(textHtml)
-    const yc = await searchYeuCauUngVien(textHtml)
 
-    const getVTYeuCau = getHeadIndex(keywordData.listYeuCauKeyWord, textHtml, false)
-    console.log(getVTYeuCau)
+    //load text to cheerio / remove img tag
+    const $ = cheerio.load(textHtml);
+    $('img').remove();
+
+    const newHtmltext = $.html()
+
+    const getmota = getTagIncludeKeyword(keywordData.listMoTaCongViec, newHtmltext, 'p')
+    const getyeucau = getTagIncludeKeyword(keywordData.listYeuCauKeyWord, newHtmltext, 'p')
+    const getThongTinKhac = getTagIncludeKeyword(keywordData.listThongTinKhacKeyWord, newHtmltext, 'p')
+    const getCongViec = getTagIncludeKeyword(keywordData.listViTriTuyenDungKeyWord, newHtmltext, 'p')
+    const getDiaDiemLamViec = getTagIncludeKeyword(keywordData.listLocationKeyWord, newHtmltext, 'p')
+    const getListThoiHanNopHoSo = getTagIncludeKeyword(keywordData.listTimeKeyWord, newHtmltext, 'p')
+    const getMucLuong = getTagIncludeKeyword(keywordData.listMucLuong, newHtmltext, 'p')
+    
+    const arr = [getMucLuong, getmota, getyeucau, getCongViec, getDiaDiemLamViec, getListThoiHanNopHoSo, getThongTinKhac]
+    
+    const vt = await searchViTriLamViec(newHtmltext)
+    const ht = await searchHinhThucLamViec(extractedText)
+    const address = await searchDiaDiemLamViec(newHtmltext)
+    const time = await searchThoiHanNopHoSo(newHtmltext)
+    const yc = await searchYeuCauUngVien(newHtmltext, arr)
+    const moTa = await searchMoTaCongViec(newHtmltext, arr)
+    const info = await searchThongTinKhac(newHtmltext, arr)
+    const luong = await searchMucLuong(newHtmltext, arr)
+
 
     let tinTuyenDung = {
         congViec: vt,
@@ -237,20 +377,15 @@ const extractFileWordToObject = async (file) => {
         diaDiemLamViec: removeCloseTagsExcess(address).trim(),
         thoiHanNopHoSo: removeCloseTagsExcess(time).trim(),
         chitietcongviec: {
-            yeucauungvien: removeCloseTagsExcess(yc).trim(),
-            motacongviec: "",
-            thongtinkhac: ""
+            yeucauungvien: yc,
+            motacongviec: moTa,
+            thongtinkhac: info
         },
-        mucLuong: "",
-        tinhThanhPho: "",
-        quanHuyen: "",
-        phuongXa: ""
+        mucLuong: luong
     }
 
     console.log(tinTuyenDung)
-    console.log(time)
 
- 
 }
 module.exports = {
     extractFileWordToObject
