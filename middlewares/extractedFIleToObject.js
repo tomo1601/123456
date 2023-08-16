@@ -276,7 +276,6 @@ const searchMucLuong = async (text, arr) => {
       .get()
       .join('\n');
 
-    console.log(resultmucLuong)
     return resultmucLuong
 }
 
@@ -327,7 +326,7 @@ const removeCloseTagsExcess = (text) => {
 
 const extractFileWordToObject = async (file) => {
       
-    const content = fs.readFileSync('files/JD-NHANVIENKYTHUATLAYOUT.docx');
+    const content = fs.readFileSync(file);
     
     //get text content
     const zip = new PizZip();
@@ -363,7 +362,7 @@ const extractFileWordToObject = async (file) => {
     const arr = [getMucLuong, getmota, getyeucau, getCongViec, getDiaDiemLamViec, getListThoiHanNopHoSo, getThongTinKhac,getThoiGianLamViec]
     
     const vt = await searchViTriLamViec(newHtmltext)
-    const ht = await searchHinhThucLamViec(extractedText)
+    const ht = await searchHinhThucLamViec(newHtmltext)
     const address = await searchDiaDiemLamViec(newHtmltext)
     const time = await searchThoiHanNopHoSo(newHtmltext)
     const yc = await searchYeuCauUngVien(newHtmltext, arr)
@@ -385,8 +384,7 @@ const extractFileWordToObject = async (file) => {
         mucLuong: luong
     }
 
-    console.log(tinTuyenDung)
-
+    return tinTuyenDung
 }
 module.exports = {
     extractFileWordToObject
