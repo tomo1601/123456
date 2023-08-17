@@ -252,7 +252,7 @@ const searchThongTinKhac = async (text, arr) => {
     return resultthongTinKhac
 }
 
-const searchMucLuong = async (text, arr) => {
+/* const searchMucLuong = async (text, arr) => {
     const listMucLuongKW = keywordData.listMucLuong
 
     const $ = cheerio.load(text);
@@ -277,37 +277,49 @@ const searchMucLuong = async (text, arr) => {
       .join('\n');
 
     return resultmucLuong
-}
-
-/* const searchMucLuong = async (text, arr) => {
-    const listMucLuongKW = keywordData.listMucLuong
-
-    const $ = cheerio.load(text);
-    const mucLuong = getTagIncludeKeyword(listMucLuongKW, text, 'p')
-
-    const arrPart = arr
-    const listKeyWord = []
-    
-    for( const a of arrPart){
-        if(a !== null){
-            if(a.child !== null) listKeyWord.unshift(a.child)
-            else listKeyWord.unshift(a.parent)
-        }
-    }
-
-    const resultmucLuong = $(`p:contains(${mucLuong.child ? mucLuong.child : mucLuong.parent})`).nextUntil((index, element) => {
-        const text = $(element).text();
-        return listKeyWord.some(condition => text.includes(condition));
-    })
-    .add(`ul:contains(${mucLuong.child ? mucLuong.child : mucLuong.parent})`).find('li')
-    .map((_, elem) => $(elem).text().trim())
-    .get()
-    .join('\n') + '\n';
-
-    console.log(resultmucLuong);
-    return resultmucLuong;
 } */
 
+const generationPattern = (arr) => {
+    let text ='(?:'
+    for(const a of arr) {
+      if(a===arr[arr.length-1]) text+= a +")"
+      else text+= a+'|'
+    }
+    return text
+  }
+  
+const extractSalaryInfo = (patterns,text) => {
+    let minSal= null
+    let maxSal= null
+    let index = 0
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if(minSal===null) minSal = match[1].replace(/[.,]/g, '');
+        if(maxSal===null||maxSal===minSal){
+          maxSal = match[2] ? match[2].replace(/[.,]/g, '') : minSal;
+        }
+      }
+    }
+  
+    return {min:minSal, max: maxSal};
+}
+  
+const searchMucLuong = async (text) => {
+    const listMucLuongKW = keywordData.listMucLuong;
+    const a = generationPattern(listMucLuongKW)
+  
+    const patterns = [
+      new RegExp(`${a}\\s+(\\d{1,3}(?:[.,]\\d{3})*)(?:\\s*(?:-|–|đến)\\s*(\\d{1,3}(?:[.,]\\d{3})*))?`),
+      new RegExp(`${a}\\s+(\\d{1,3}(?:,\\d{3})*)(?:\\s*(?:-|–|đến)\\s*(\\d{1,3}(?:,\\d{3})*))?`),
+      new RegExp(`${a}\\s+(\\d{1,3})\\s*triệu(?:\\s*(?:-|–|đến)\\s*(\\d{1,3})\\s*triệu)?`),
+      new RegExp(`${a}\\s+(\\d+)\\s*triệu(?:\\s*(?:-|–|đến)\\s*(\\d+)\\s*triệu)?`),
+      new RegExp(`${a}\\s+(\\d+)\\s*triệu`)
+    ]
+  
+    const salary = extractSalaryInfo(patterns, text)
+    return salary
+};
 
 const removeCloseTagsExcess = (text) => {
     const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</ul>","</ol>","</li>","</table>","</tr>","</td>","</th>","</iframe>", ':', ',', ',',';','?'];
@@ -368,7 +380,7 @@ const extractFileWordToObject = async (file) => {
     const yc = await searchYeuCauUngVien(newHtmltext, arr)
     const moTa = await searchMoTaCongViec(newHtmltext, arr)
     const info = await searchThongTinKhac(newHtmltext, arr)
-    const luong = await searchMucLuong(newHtmltext, arr)
+    const luong = await searchMucLuong(extractedText)
 
 
     let tinTuyenDung = {

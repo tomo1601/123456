@@ -126,15 +126,50 @@ const generationPattern = (arr) => {
   return text
 }
 
+const checkFomatLuong =(text, a ) => {
+  const pattern = new RegExp(`${a}\\s+\\d+\\s*(?:triệu|tr)`)
+  return pattern.test(text);
+}
+
 const extractSalaryInfo = (patterns,text) => {
   let minSal= null
   let maxSal= null
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match) {
-      if(minSal===null) minSal = match[1].replace(/[.,]/g, '');
-      if(maxSal===null||maxSal===minSal){
-        maxSal = match[2] ? match[2].replace(/[.,]/g, '') : minSal;
+
+  const listMucLuongKW = keywordData.listMucLuong;
+  const a = generationPattern(listMucLuongKW)
+
+  if(checkFomatLuong(text,a)){
+    // Sử dụng đơn vị chữ: 1tr || 1 triệu
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const m1 =  match[1]?match[1]:null;
+        const m2 =  match[2]?match[2]:null;
+  
+        if(minSal===null)
+          minSal = m1
+        if(maxSal===null){
+          maxSal = m2
+        }
+        console.log(match)
+      }
+    }
+  }
+  else {
+
+    // Không sử dụng đơn vị chữ: 1.000.000 || 1000000
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const m1 =  match[1]?match[1].replace(/[.,]/g, ''):null;
+        const m2 =  match[2]?match[2].replace(/[.,]/g, ''):null;
+  
+        if(minSal===null||Number(m1)>Number(minSal))
+          minSal = m1
+        if(maxSal===null||Number(m2)>Number(maxSal)){
+          maxSal = m2
+        }
+        console.log(match)
       }
     }
   }
@@ -144,29 +179,18 @@ const extractSalaryInfo = (patterns,text) => {
 
 const searchMucLuong = async (text) => {
   const listMucLuongKW = keywordData.listMucLuong;
+  const a = generationPattern(listMucLuongKW)
 
   const patterns = [
-    new RegExp(`${generationPattern(listMucLuongKW)}\\s+(\\d+(?:[.,]\\d{3})*)(?:\\s*(?:-|đến)\\s*(\\d+(?:[.,]\\d{3})*))?`),
-    new RegExp(`${generationPattern(listMucLuongKW)}\\s+(\\d+)\\s*triệu(?:\\s*(?:-|đến)\\s*(\\d+)\\s*triệu)?`),
-    new RegExp(`${generationPattern(listMucLuongKW)}\\s+(\\d+)\\s*triệu`),
-    new RegExp(`${generationPattern(listMucLuongKW)}\\s+(\\d{1,3}(?:,\\d{3})*)(?:\\s*(?:-|đến)\\s*(\\d{1,3}(?:,\\d{3})*))?`),
-    new RegExp(`${generationPattern(listMucLuongKW)}\\s+(\\d{1,3})\\s*triệu(?:\\s*(?:-|đến)\\s*(\\d{1,3})\\s*triệu)?`)
+    new RegExp(`${a}\\s+(\\d{1,3}(?:[.,]\\d{3})*)(?:\\s*(?:-|–|đến)\\s*(\\d{1,3}(?:[.,]\\d{3})*))?`),
+    new RegExp(`${a}\\s+(\\b\\d{6,12}\\b)(?:\\s*(?:-|–|đến)\\s*(\\b\\d{6,12}\\b))`),
+    new RegExp(`${a}\\s+\\d+\\s*(?:triệu|tr)(?:\\s*(?:-|–|đến)\\s+\\d+\\s*(?:triệu|tr))`),
+    new RegExp(`${a}\\s+(\\d+)\\s*triệu(?:\\s*(?:-|–|đến)\\s*(\\d+)\\s*triệu)?`),
+    new RegExp(`${a}\\s+(\\d+)\\s*triệu`)
   ]
 
   const salary = extractSalaryInfo(patterns, text)
-  console.log(salary)
   return salary
-
-  /* const headIndex = getHeadIndex(listMucLuongKW, text, false);
-  const textRemain = text.substring(headIndex.index);
-  if (headIndex === -1) {
-    return "";
-  } else {
-    const indexEnd = getEndIndex(stopWord, textRemain).index + headIndex.index;
-    console.log(headIndex.index, indexEnd)
-    const result = text.substring(headIndex.index, indexEnd).trim();
-    return result;
-  } */
 };
 
 const toObject = async (file) => {
@@ -187,8 +211,7 @@ const toObject = async (file) => {
   const htlv = await searchHinhThucLamViec(textFromPdf);
   const dclv = await searchDiaDiemLamViec(textFromPdf);
   const timeNopHoSo = await searchThoiHanNopHoSo(textFromPdf);
-  const luong = await searchMucLuong(textFromPdf);
-  console.log(luong);
+  const luong = await searchMucLuong("Mức thu nhập 6tr - 7tr");
 
   console.log({
     congViec: vttd,

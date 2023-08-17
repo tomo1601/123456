@@ -395,7 +395,7 @@ const keywordData = {
     "thang lương",
     "Khoảng lương",
     "khoảng lương",
-    "Mức thu nhâp",
+    "Mức thu nhập",
     "mức thu nhập",
     "Mức lương cơ bản",
     "mức lương cơ bản",
@@ -406,6 +406,9 @@ const keywordData = {
     "Lương",
     "lương"
   ],
+  dinhDangLuong: ["1000000", "12.000.000", "6 triệu", "6triệu", "12,000,000"],
+  nganCachLuong: ["-","đến"]
+
 };
 
 module.exports = { keywordData };
