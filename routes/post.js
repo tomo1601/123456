@@ -245,9 +245,9 @@ router.post('/extractFile',upload.single('file'), async (req, res) => {
                     success: true, data: result
                 })
             }
-            else {
+            else {const result = await toObject(req.file.path)
                 res.status(200).json({
-                    success: true, data: 'detectPDFFile'
+                    success: true, data: result
                 })
             }
         
@@ -263,10 +263,6 @@ router.post('/extractFile',upload.single('file'), async (req, res) => {
         console.log(error)
         res.status(500).json({success: false, message: 'Internal server error!'})
     }
-})
-
-router.post('/extractFilepdf',upload.single('file'), async (req, res) => {
-    toObject()
 })
 
 module.exports = router

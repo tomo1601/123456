@@ -90,5 +90,3 @@ Post http://localhost:5000/api/post/extractFile
 ###
 Post http://localhost:5000/api/post/extractFilepdf
 
-
-

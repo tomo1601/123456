@@ -140,7 +140,8 @@ const extractSalaryInfo = (patterns,text) => {
 
   if(checkFomatLuong(text,a)){
     // Sử dụng đơn vị chữ: 1tr || 1 triệu
-    for (const pattern of patterns) {
+    const arr = patterns.slice(2)
+    for (const pattern of arr) {
       const match = text.match(pattern);
       if (match) {
         const m1 =  match[1]?match[1]:null;
@@ -151,14 +152,13 @@ const extractSalaryInfo = (patterns,text) => {
         if(maxSal===null){
           maxSal = m2
         }
-        console.log(match)
       }
     }
   }
   else {
-
+    const arr = patterns.slice(0,2)
     // Không sử dụng đơn vị chữ: 1.000.000 || 1000000
-    for (const pattern of patterns) {
+    for (const pattern of arr) {
       const match = text.match(pattern);
       if (match) {
         const m1 =  match[1]?match[1].replace(/[.,]/g, ''):null;
@@ -169,7 +169,6 @@ const extractSalaryInfo = (patterns,text) => {
         if(maxSal===null||Number(m2)>Number(maxSal)){
           maxSal = m2
         }
-        console.log(match)
       }
     }
   }
@@ -184,24 +183,166 @@ const searchMucLuong = async (text) => {
   const patterns = [
     new RegExp(`${a}\\s+(\\d{1,3}(?:[.,]\\d{3})*)(?:\\s*(?:-|–|đến)\\s*(\\d{1,3}(?:[.,]\\d{3})*))?`),
     new RegExp(`${a}\\s+(\\b\\d{6,12}\\b)(?:\\s*(?:-|–|đến)\\s*(\\b\\d{6,12}\\b))`),
-    new RegExp(`${a}\\s+\\d+\\s*(?:triệu|tr)(?:\\s*(?:-|–|đến)\\s+\\d+\\s*(?:triệu|tr))`),
-    new RegExp(`${a}\\s+(\\d+)\\s*triệu(?:\\s*(?:-|–|đến)\\s*(\\d+)\\s*triệu)?`),
-    new RegExp(`${a}\\s+(\\d+)\\s*triệu`)
+    new RegExp(`${a}\\s+(\\d+\\s*(?:triệu|tr))(?:\\s*(?:-|–|đến)\\s+(\\d+\\s*(?:triệu|tr)))`)
   ]
 
   const salary = extractSalaryInfo(patterns, text)
   return salary
 };
 
+const createRegexFromList = (array) => {
+  const escapedArray = array.map(item => item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const regexPattern = `(?:${escapedArray.join('|')})`;
+  return new RegExp(regexPattern, 'gi');
+};
+
+const searchPhucLoi = async(text) => {
+    const listPL = keywordData.listPhucLoi
+
+    const regex = createRegexFromList(listPL);
+    const matches = text.match(regex);
+    if(matches){
+        return matches
+    }
+    else return []
+}
+
+const chectIfExistInText = (text, arr) => {
+  for(const a of arr){
+    const match = text.match(a);
+    if(match)return true
+  }
+  return false
+}
+
+
+const searchMoTa = async (text) => {
+  const matchVttd = createRegexFromList(keywordData.listViTriTuyenDungKeyWord);
+  const matchHtlv = createRegexFromList(keywordData.listFulltimeKeyWord.concat(keywordData.listParttimeKeyWord.concat(keywordData.listRemoteKeyWord)));
+  const matchDcLv = createRegexFromList(keywordData.listLocationKeyWord);
+  const matchThnhs = createRegexFromList(keywordData.listTimeKeyWord);
+  const matchLuong = createRegexFromList(keywordData.listMucLuong);
+  const matchCheDo = createRegexFromList(keywordData.listPhucLoi);
+  const matchYc = createRegexFromList(keywordData.listYeuCauKeyWord);
+  const matchTtK  = createRegexFromList(keywordData.listThongTinKhacKeyWord);
+
+  const regexArray = [matchVttd, matchHtlv, matchDcLv, matchThnhs, matchLuong, matchCheDo, matchYc, matchTtK];
+  const startPosRegex = createRegexFromList(keywordData.listMoTaCongViec)
+  let lineStart = null
+  let lineEnd = null
+  const lines = text.split('\n').filter(item=> item.length>1)
+  let match = ''
+
+  for (const [index, value] of lines.entries()){
+    const matcheStart = value.match(startPosRegex);
+    if(matcheStart){
+      if(lineStart===null) lineStart=index
+      if(matcheStart[0].length>match.length&& index>= lineStart){
+        match = matcheStart[0]
+        lineStart = index
+      }
+    }
+    if(lineEnd===null){
+      if(chectIfExistInText(value,regexArray)&&index>lineStart&&lineStart!==null) lineEnd=index
+    } 
+  }
+
+  if(lineStart === null) return ''
+  else {
+    const result = lines.slice(lineStart, lineEnd===null?lines.length:lineEnd).join('\n');
+    return result
+  }
+
+}
+
+const searchYeuCau = async (text) => {
+  const matchVttd = createRegexFromList(keywordData.listViTriTuyenDungKeyWord);
+  const matchHtlv = createRegexFromList(keywordData.listFulltimeKeyWord.concat(keywordData.listParttimeKeyWord.concat(keywordData.listRemoteKeyWord)));
+  const matchDcLv = createRegexFromList(keywordData.listLocationKeyWord);
+  const matchThnhs = createRegexFromList(keywordData.listTimeKeyWord);
+  const matchLuong = createRegexFromList(keywordData.listMucLuong);
+  const matchCheDo = createRegexFromList(keywordData.listPhucLoi);
+  const matchMoTa = createRegexFromList(keywordData.listMoTaCongViec);
+  const matchTtK  = createRegexFromList(keywordData.listThongTinKhacKeyWord);
+
+  const regexArray = [matchVttd, matchHtlv, matchDcLv, matchThnhs, matchLuong, matchCheDo, matchMoTa, matchTtK];
+  const startPosRegex = createRegexFromList(keywordData.listYeuCauKeyWord)
+  let lineStart = null
+  let lineEnd = null
+  const lines = text.split('\n').filter(item=> item.length>1)
+
+  let match = ''
+
+  for (const [index, value] of lines.entries()){
+    const matcheStart = value.match(startPosRegex);
+    if(matcheStart){
+      if(lineStart===null) lineStart=index
+      if(matcheStart[0].length>match.length&& index>= lineStart){
+        match = matcheStart[0]
+        lineStart = index
+      }
+    }
+    if(lineEnd===null){
+      if(chectIfExistInText(value,regexArray)&&index>lineStart&&lineStart!==null) lineEnd=index
+    } 
+  }
+  
+  if(lineStart === null) return ''
+  else {
+    const result = lines.slice(lineStart, lineEnd===null?lines.length:lineEnd).join('\n');
+    return result
+  }
+
+}
+
+const searchThongTinKhac = async (text) => {
+  const matchVttd = createRegexFromList(keywordData.listViTriTuyenDungKeyWord);
+  const matchHtlv = createRegexFromList(keywordData.listFulltimeKeyWord.concat(keywordData.listParttimeKeyWord.concat(keywordData.listRemoteKeyWord)));
+  const matchDcLv = createRegexFromList(keywordData.listLocationKeyWord);
+  const matchThnhs = createRegexFromList(keywordData.listTimeKeyWord);
+  const matchLuong = createRegexFromList(keywordData.listMucLuong);
+  const matchCheDo = createRegexFromList(keywordData.listPhucLoi);
+  const matchYc = createRegexFromList(keywordData.listYeuCauKeyWord);
+  const matchMoTa  = createRegexFromList(keywordData.listMoTaCongViec);
+
+  const regexArray = [matchVttd, matchHtlv, matchDcLv, matchThnhs, matchLuong, matchCheDo, matchYc, matchMoTa];
+  const startPosRegex = createRegexFromList(keywordData.listThongTinKhacKeyWord)
+  let lineStart = null
+  let lineEnd = null
+  const lines = text.split('\n').filter(item=> item.length>1)
+  let match = ''
+
+  for (const [index, value] of lines.entries()){
+    const matcheStart = value.match(startPosRegex);
+    if(matcheStart){
+      if(lineStart===null) lineStart=index
+      if(matcheStart[0].length>match.length&& index>= lineStart){
+        match = matcheStart[0]
+        lineStart = index
+      }
+    }
+    if(lineEnd===null){
+      if(chectIfExistInText(value,regexArray)&&index>lineStart&&lineStart!==null) lineEnd=index
+    } 
+  }
+
+  if(lineStart === null) return ''
+  else {
+    const result = lines.slice(lineStart, lineEnd===null?lines.length:lineEnd).join('\n');
+    return result
+  }
+
+}
+
+
 const toObject = async (file) => {
-  const pdfFilePath = "./files/JD-NHANVIENKYTHUATLAYOUT.pdf";
+  const pdfFilePath = file;
 
   let textFromPdf;
 
   await readPdf(pdfFilePath)
     .then((textContent) => {
       textFromPdf = textContent;
-      console.log(textFromPdf);
     })
     .catch((error) => {
       console.error("Error:", error);
@@ -211,19 +352,24 @@ const toObject = async (file) => {
   const htlv = await searchHinhThucLamViec(textFromPdf);
   const dclv = await searchDiaDiemLamViec(textFromPdf);
   const timeNopHoSo = await searchThoiHanNopHoSo(textFromPdf);
-  const luong = await searchMucLuong("Mức thu nhập 6tr - 7tr");
+  const luong = await searchMucLuong(textFromPdf);
+  const chedo = await searchPhucLoi(textFromPdf)
+  const mota = await searchMoTa(textFromPdf)
+  const yeuCau = await searchYeuCau(textFromPdf)
+  const thongTinKhac = await searchThongTinKhac(textFromPdf)
 
-  console.log({
+ return ({
     congViec: vttd,
     hinhThucLamViec: htlv,
     diaDiemLamViec: dclv,
     thoiHanNopHoSo: timeNopHoSo,
     chitietcongviec: {
-      yeucauungvien: "",
-      motacongviec: "",
-      thongtinkhac: "",
+      yeucauungvien: yeuCau,
+      motacongviec: mota,
+      thongtinkhac: thongTinKhac,
     },
     mucLuong: luong,
+    chedo:chedo
   });
 };
 

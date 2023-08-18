@@ -288,39 +288,87 @@ const generationPattern = (arr) => {
     return text
   }
   
-const extractSalaryInfo = (patterns,text) => {
+  const checkFomatLuong =(text, a ) => {
+    const pattern = new RegExp(`${a}\\s+\\d+\\s*(?:triệu|tr)`)
+    return pattern.test(text);
+  }
+  
+  const extractSalaryInfo = (patterns,text) => {
     let minSal= null
     let maxSal= null
-    let index = 0
-    for (const pattern of patterns) {
-      const match = text.match(pattern);
-      if (match) {
-        if(minSal===null) minSal = match[1].replace(/[.,]/g, '');
-        if(maxSal===null||maxSal===minSal){
-          maxSal = match[2] ? match[2].replace(/[.,]/g, '') : minSal;
+  
+    const listMucLuongKW = keywordData.listMucLuong;
+    const a = generationPattern(listMucLuongKW)
+  
+    if(checkFomatLuong(text,a)){
+      // Sử dụng đơn vị chữ: 1tr || 1 triệu
+      const arr = patterns.slice(2)
+      for (const pattern of arr) {
+        const match = text.match(pattern);
+        if (match) {
+          const m1 =  match[1]?match[1]:null;
+          const m2 =  match[2]?match[2]:null;
+    
+          if(minSal===null)
+            minSal = m1
+          if(maxSal===null){
+            maxSal = m2
+          }
+        }
+      }
+    }
+    else {
+      const arr = patterns.slice(0,2)
+      // Không sử dụng đơn vị chữ: 1.000.000 || 1000000
+      for (const pattern of arr) {
+        const match = text.match(pattern);
+        if (match) {
+          const m1 =  match[1]?match[1].replace(/[.,]/g, ''):null;
+          const m2 =  match[2]?match[2].replace(/[.,]/g, ''):null;
+    
+          if(minSal===null||Number(m1)>Number(minSal))
+            minSal = m1
+          if(maxSal===null||Number(m2)>Number(maxSal)){
+            maxSal = m2
+          }
         }
       }
     }
   
     return {min:minSal, max: maxSal};
-}
+  }
   
-const searchMucLuong = async (text) => {
+  const searchMucLuong = async (text) => {
     const listMucLuongKW = keywordData.listMucLuong;
     const a = generationPattern(listMucLuongKW)
   
     const patterns = [
       new RegExp(`${a}\\s+(\\d{1,3}(?:[.,]\\d{3})*)(?:\\s*(?:-|–|đến)\\s*(\\d{1,3}(?:[.,]\\d{3})*))?`),
-      new RegExp(`${a}\\s+(\\d{1,3}(?:,\\d{3})*)(?:\\s*(?:-|–|đến)\\s*(\\d{1,3}(?:,\\d{3})*))?`),
-      new RegExp(`${a}\\s+(\\d{1,3})\\s*triệu(?:\\s*(?:-|–|đến)\\s*(\\d{1,3})\\s*triệu)?`),
-      new RegExp(`${a}\\s+(\\d+)\\s*triệu(?:\\s*(?:-|–|đến)\\s*(\\d+)\\s*triệu)?`),
-      new RegExp(`${a}\\s+(\\d+)\\s*triệu`)
+      new RegExp(`${a}\\s+(\\b\\d{6,12}\\b)(?:\\s*(?:-|–|đến)\\s*(\\b\\d{6,12}\\b))`),
+      new RegExp(`${a}\\s+(\\d+\\s*(?:triệu|tr))(?:\\s*(?:-|–|đến)\\s+(\\d+\\s*(?:triệu|tr)))`)
     ]
   
     const salary = extractSalaryInfo(patterns, text)
     return salary
+  };
+
+const createRegexFromList = (array) => {
+  const escapedArray = array.map(item => item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const regexPattern = `(?:${escapedArray.join('|')})`;
+  return new RegExp(regexPattern, 'gi');
 };
 
+const searchPhucLoi = async(text) => {
+    const listPL = keywordData.listPhucLoi
+
+    const regex = createRegexFromList(listPL);
+    const matches = text.match(regex);
+    if(matches){
+        return matches
+    }
+    else return []
+
+}
 const removeCloseTagsExcess = (text) => {
     const closingTags = ["</p>","</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>","</strong>", "</b>","</em>", "</i>","</u>","</s>", "</del>", "</strike>","</sup>","</sub>","</a>","</ul>","</ol>","</li>","</table>","</tr>","</td>","</th>","</iframe>", ':', ',', ',',';','?'];
 
@@ -333,8 +381,6 @@ const removeCloseTagsExcess = (text) => {
     }
     return resultText;
 }
-
-
 
 const extractFileWordToObject = async (file) => {
       
@@ -371,7 +417,7 @@ const extractFileWordToObject = async (file) => {
     const getMucLuong = getTagIncludeKeyword(keywordData.listMucLuong, newHtmltext, 'p')
     const getThoiGianLamViec = getTagIncludeKeyword(["Thời gian làm việc"], newHtmltext, 'p')
     
-    const arr = [getMucLuong, getmota, getyeucau, getCongViec, getDiaDiemLamViec, getListThoiHanNopHoSo, getThongTinKhac,getThoiGianLamViec]
+    const arr = [getMucLuong, getmota, getyeucau, getCongViec, getDiaDiemLamViec, getListThoiHanNopHoSo, getThongTinKhac,getThoiGianLamViec, "Phúc lợi", "phúc lợi"]
     
     const vt = await searchViTriLamViec(newHtmltext)
     const ht = await searchHinhThucLamViec(newHtmltext)
@@ -381,6 +427,7 @@ const extractFileWordToObject = async (file) => {
     const moTa = await searchMoTaCongViec(newHtmltext, arr)
     const info = await searchThongTinKhac(newHtmltext, arr)
     const luong = await searchMucLuong(extractedText)
+    const chedo = await searchPhucLoi(extractedText)
 
 
     let tinTuyenDung = {
@@ -393,7 +440,8 @@ const extractFileWordToObject = async (file) => {
             motacongviec: moTa,
             thongtinkhac: info
         },
-        mucLuong: luong
+        mucLuong: luong,
+        chedo: chedo
     }
 
     return tinTuyenDung
