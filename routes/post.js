@@ -70,7 +70,6 @@ const getViTriTuyenDungByPostId = async (postId, request) => {
     const res = await request.query(sqlQuery)
 
     const listViTri = res.recordset.map(item => Number(item.ViTriTuyenDung)); 
-    console.log(listViTri)
     sqlQuery1 += generateWhereOrSql("id",listViTri, request)
     const res1 = await request.query(sqlQuery1)
     return (res1.recordset)
@@ -266,3 +265,225 @@ router.post('/extractFile',upload.single('file'), async (req, res) => {
 })
 
 module.exports = router
+
+/**
+ * @swagger
+ * tags:
+ *   name: Posts
+ * /api/post:
+ *   get:
+ *     tags: [Posts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filter items by category
+ *       - in: query
+ *         name: price
+ *         schema:
+ *           type: number
+ *         description: Filter items by price
+*     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 jobs:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       logoDaiDien:
+ *                         type: string
+ *                       href:
+ *                         type: string
+ *                       tenTuyenDung:
+ *                         type: string
+ *                       diaChi:
+ *                         type: string
+ *                       mucLuong:
+ *                         type: string
+ *                       thoiHanNopHoSo:
+ *                         type: string
+ *                         format: date-time
+ *                       congviec:
+ *                         type: string
+ *                       cheDo:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: integer
+ *                             icon:
+ *                               type: string
+ *                             ten:
+ *                               type: string
+ *                             href:
+ *                               type: string
+ *                       viTriTuyenDung:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: integer
+ *                             icon:
+ *                               type: string
+ *                             ten:
+ *                               type: string
+ *                             href:
+ *                               type: string
+ *       400:
+ *         description: No posts found with the given ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */
+
+
+/**
+ * @swagger
+ * /api/post/{id}:
+ *   get:
+ *     summary: Get details of a post by ID
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the post to retrieve
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 barTitle:
+ *                   type: string
+ *                 metaTitle:
+ *                   type: string
+ *                 metaKeyword:
+ *                   type: string
+ *                 metaDescription:
+ *                   type: string
+ *                 metaImage:
+ *                   type: string
+ *                 tenTuyenDung:
+ *                   type: string
+ *                 chitietcongviec:
+ *                   type: object
+ *                   properties:
+ *                     yeucauungvien:
+ *                       type: string
+ *                     thongtinkhac:
+ *                       type: string
+ *                     motacongviec:
+ *                       type: string
+ *                 suMenhCongty:
+ *                   type: string
+ *                 quyMoCongTy:
+ *                   type: string
+ *                 logoDaiDien:
+ *                   type: string
+ *                 href:
+ *                   type: string
+ *                 diaChi:
+ *                   type: string
+ *                 mucLuong:
+ *                   type: string
+ *                 soNamKinhNghiem:
+ *                   type: string
+ *                 thoiHanNopHoSo:
+ *                   type: string
+ *                   format: date
+ *                 ngayTao:
+ *                   type: string
+ *                   format: date
+ *                 capNhatLanCuoi:
+ *                   type: string
+ *                   format: date
+ *                 congviec:
+ *                   type: string
+ *                 cheDo:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       icon:
+ *                         type: string
+ *                       ten:
+ *                         type: string
+ *                       href:
+ *                         type: string
+ *                 viTriTuyenDung:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       icon:
+ *                         type: string
+ *                       ten:
+ *                         type: string
+ *                       href:
+ *                         type: string
+ *       400:
+ *         description: No posts found with the given ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */

@@ -2,11 +2,47 @@ const express = require('express')
 const app = express();
 const sql = require("mssql");
 const cors = require('cors')
+const swaggerUI = require('swagger-ui-express')
+const swaggerJsDoc = require('swagger-jsdoc')
 require("dotenv").config()
 const authRouter = require('./routes/auth')
 const postRouter = require('./routes/post')
 const employeeRouter = require('./routes/NguoiTimViec')
 const companyRouter = require('./routes/Company')
+
+const options = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Library API",
+            version: "1.0.0",
+            description: "Web tuyển dụng API"
+        },
+        components: {
+            securitySchemes: {
+                BearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
+            }
+        },
+        security: [
+            {
+                BearerAuth: []
+            }
+        ],
+        servers: [
+            {
+                url: "http://localhost:5000"
+            }
+        ],
+    },
+    apis:["./routes/*.js"]
+} 
+
+const specs = swaggerJsDoc(options)
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs))
 
 const connectDb = async() =>{
 

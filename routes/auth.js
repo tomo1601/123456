@@ -33,7 +33,6 @@ router.post('/register', async (req,res) => {
     
     try {
         await request.query(sqlQuery, (error, result) => {
-            console.log(result)
             if(error) throw error
             else res.status(200).json({
                 success: true, message: 'Register successfully!'
@@ -72,9 +71,9 @@ router.post('/login', async (req,res) => {
                     await request.query(sqlQuery, (error) => {
                         if(error) throw error
                         else res.status(200).json({
-                        success: true, 
-                        message: 'Login successfully!',
-                        token: token
+                            success: true, 
+                            message: 'Login successfully!',
+                            token: token
                     })
                 })}
                 else res.status(400).json({
@@ -96,3 +95,97 @@ router.post('/login', async (req,res) => {
 
 
 module.exports = router
+
+
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ * /api/auth/register:
+ *   post:
+ *     tags: [Authentication]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Registration successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Register successfully!
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               message: Internal server error!
+ */
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login to the application
+ *     tags: [Authentication]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *       400:
+ *         description: Invalid username or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Invalid token
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */
