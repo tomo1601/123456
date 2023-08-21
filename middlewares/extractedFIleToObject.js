@@ -382,6 +382,19 @@ const removeCloseTagsExcess = (text) => {
     return resultText;
 }
 
+const removePsWithLinks = (html) => {
+    const $ = cheerio.load(html);
+
+    $('p').each((index, element) => {
+        const pText = $(element).text();
+        if (pText.includes('http://') || pText.includes('https://')) {
+            $(element).remove();
+        }
+    });
+
+    return $.html();
+}
+
 const extractFileWordToObject = async (file) => {
       
     const content = fs.readFileSync(file);
@@ -406,7 +419,7 @@ const extractFileWordToObject = async (file) => {
     const $ = cheerio.load(textHtml);
     $('img').remove();
 
-    const newHtmltext = $.html()
+    const newHtmltext = removePsWithLinks($.html())
 
     const getmota = getTagIncludeKeyword(keywordData.listMoTaCongViec, newHtmltext, 'p')
     const getyeucau = getTagIncludeKeyword(keywordData.listYeuCauKeyWord, newHtmltext, 'p')

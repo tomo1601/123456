@@ -30,7 +30,7 @@ Content-Type: application/json
 GET http://localhost:5000/api/post
 
 ###
-GET http://localhost:5000/api/post/123
+GET http://localhost:5000/api/post/postId/123
 
 ###
 GET http://localhost:5000/api/post/category/design-art-multimedia
@@ -90,3 +90,12 @@ Post http://localhost:5000/api/post/extractFile
 ###
 Post http://localhost:5000/api/post/extractFilepdf
 
+###
+GET http://localhost:5000/api/post/coordinate
+Content-Type: application/json
+
+{
+    "lat": 20.90692732755825,
+    "log": 105.57861328125001,
+    "radius": 18965.728225521776
+}

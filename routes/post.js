@@ -42,6 +42,23 @@ const generateWhereOrSql = (nameCol, arr, request, isRenameTale, name) => {
     return queryWhere;
 };
 
+const coordinatesInCircleRange = (centerLongitude, centerLatitude, radius, pointLongitude, pointLatitude) =>{
+    const earthRadius = 6371000; // Đường kính trái đất trong mét
+
+    const centerLatRad = centerLatitude * (Math.PI / 180);
+    const pointLatRad = pointLatitude * (Math.PI / 180);
+
+    const deltaLongitude = Math.abs(centerLongitude - pointLongitude) * (Math.PI / 180);
+    const centralAngle = Math.acos(
+        Math.sin(centerLatRad) * Math.sin(pointLatRad) +
+        Math.cos(centerLatRad) * Math.cos(pointLatRad) * Math.cos(deltaLongitude)
+    );
+
+    const distance = earthRadius * centralAngle;
+    console.log(distance)
+    return distance <= radius;
+}
+
 const createSqlInput = (obj, request) => {
   const keys = Object.keys(obj);
   for (const key of keys) {
@@ -96,7 +113,7 @@ router.get('/', async (req,res) => {
 
 })
 
-router.get('/:id', async (req,res) => {
+router.get('/postId/:id', async (req,res) => {
     
     const request = new sql.Request();
 
@@ -263,6 +280,30 @@ router.post('/extractFile',upload.single('file'), async (req, res) => {
         res.status(500).json({success: false, message: 'Internal server error!'})
     }
 })
+
+router.get('/coordinate', async (req,res) => {
+    
+    const request = new sql.Request();
+
+    const coor = req.body
+   
+    try {
+        const jobs = await getJobs(request)
+        if(jobs === -1) res.status(400).json({success: false, message: 'There are no jobs yet!'})
+        else{
+            console.log(coordinatesInCircleRange(coor.lat, coor.log, coor.radius, 20.835573156514175, 105.58813264504804))
+            res.status(200).json({success: true, jobs: jobs})
+        }
+        
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+
+
+})
+
 
 module.exports = router
 

@@ -57,6 +57,12 @@ const getViTriTuyenDungByPostId = async (postId, request) => {
   return (res1.recordset)
 }
 
+const getCoordinateByPostId = async(postId, request) => {
+  const sqlQuery = `select lat, log from Web_Post_ToaDo where IDPost = @PostId${postId}`
+  
+  const res = await request.query(sqlQuery)
+  return (res.recordset[0])
+}
 
 const getJobs = async (request) => {
 
@@ -80,6 +86,9 @@ const getJobs = async (request) => {
         request.input(`PostId${tin.id}`, sql.Int, tin.id)
         const res2 = await getCheDoByPostId(tin.id,request)
         const res3 = await getViTriTuyenDungByPostId(tin.id, request)
+        const res4 = await getCoordinateByPostId(tin.id, request)
+        tuyendung[index]['lat'] = res4.lat
+        tuyendung[index]['log']=res4.log
         tuyendung[index]['cheDo'] = res2
         tuyendung[index]['viTriTuyenDung']=res3
     }
@@ -87,6 +96,7 @@ const getJobs = async (request) => {
   }
 }
 }
+
 
 module.exports = {
     getJobs,

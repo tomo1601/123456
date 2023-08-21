@@ -230,7 +230,7 @@ const searchMoTa = async (text) => {
   const startPosRegex = createRegexFromList(keywordData.listMoTaCongViec)
   let lineStart = null
   let lineEnd = null
-  const lines = text.split('\n').filter(item=> item.length>1)
+  const lines = text.split('\n').filter(item=> item.length>1&&!/(http|https):\/\/\S+/i.test(item))
   let match = ''
 
   for (const [index, value] of lines.entries()){
@@ -269,7 +269,7 @@ const searchYeuCau = async (text) => {
   const startPosRegex = createRegexFromList(keywordData.listYeuCauKeyWord)
   let lineStart = null
   let lineEnd = null
-  const lines = text.split('\n').filter(item=> item.length>1)
+  const lines = text.split('\n').filter(item=> item.length>1 &&!/(http|https):\/\/\S+/i.test(item))
 
   let match = ''
 
@@ -309,7 +309,7 @@ const searchThongTinKhac = async (text) => {
   const startPosRegex = createRegexFromList(keywordData.listThongTinKhacKeyWord)
   let lineStart = null
   let lineEnd = null
-  const lines = text.split('\n').filter(item=> item.length>1)
+  const lines = text.split('\n').filter(item=> item.length>1 &&!/(http|https):\/\/\S+/i.test(item))
   let match = ''
 
   for (const [index, value] of lines.entries()){
