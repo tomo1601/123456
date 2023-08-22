@@ -9,6 +9,8 @@ const authRouter = require('./routes/auth')
 const postRouter = require('./routes/post')
 const employeeRouter = require('./routes/NguoiTimViec')
 const companyRouter = require('./routes/Company')
+const addressRouter = require('./routes/address')
+const fileRouter = require('./routes/extractFile')
 
 const options = {
     definition: {
@@ -70,6 +72,8 @@ app.use('/api/auth', authRouter)
 app.use('/api/post', postRouter)
 app.use('/api/user', employeeRouter)
 app.use('/api/ntd', companyRouter)
+app.use('/api/address', addressRouter)
+app.use('/api/file', fileRouter)
 
 
 app.listen(5000, () => {

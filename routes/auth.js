@@ -32,12 +32,22 @@ router.post('/register', async (req,res) => {
     request.input('createDate', sql.VarChar, convertDateTimeFormat(datenow))
     
     try {
-        await request.query(sqlQuery, (error, result) => {
-            if(error) throw error
-            else res.status(200).json({
-                success: true, message: 'Register successfully!'
-            })
+        const checkExistUser = await request.query("Select userId from Web_Users where username = @username")
+        if(checkExistUser.recordset.length>0)res.status(400).json({
+            success: false, message: `Username ${username} have existed!`
         })
+        else{
+            await request.query(sqlQuery, (error, result) => {
+                if(error) throw error
+                else {
+                    //result.recordset[0] this is data just insert
+                    /* console.log(result.recordset[0]) */
+                    res.status(200).json({
+                        success: true, message: 'Register successfully!'
+                    })
+                }
+            })
+        }
 
     }
     catch (error) {
@@ -54,7 +64,7 @@ router.post('/login', async (req,res) => {
     const {username, password} = req.body
     request.input('username', sql.VarChar, username)
     
-    let sqlQuery = 'select * from Web_Users where username = @username or email = @username'
+    let sqlQuery = 'select * from Web_Users where username = @username'
 
     try {
         await request.query(sqlQuery, async (error, result) => {

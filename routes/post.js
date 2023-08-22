@@ -1,13 +1,16 @@
 const express = require('express')
 const router = express.Router()
 const sql = require("mssql");
-const multer = require('multer');
-const {getJobs} = require('../models/Jobs')
-const fs = require('fs');
+/* const multer = require('multer'); */
+const {getCheDoByPostId, getViTriTuyenDungByPostId, getJobs, createPostCategory, createPostToaDo, deletePostToaDo,deleteOneCategory,  deleteOnePostCategory,
+       getCoordinateByPostId, createNewPost, updatePost
+} 
+    = require('../models/Jobs')
 
-const {extractFileWordToObject} = require('../middlewares/extractedFIleToObject');
-const {toObject} = require('../middlewares/extarctedPdfFile')
+const {getCoordinates} = require('../middlewares/address');
+const { verifyAccessToken } = require('../middlewares/jwt_services');
 
+/* 
 const storage = multer.diskStorage({
     destination: (req,file, cd) => {
         cd(null, 'files/')
@@ -17,7 +20,7 @@ const storage = multer.diskStorage({
     }
 })
 
-const upload = multer({storage})
+const upload = multer({storage}) */
 
 const generateWhereOrSql = (nameCol, arr, request, isRenameTale, name) => {
     const arrays = arr;
@@ -55,7 +58,6 @@ const coordinatesInCircleRange = (centerLongitude, centerLatitude, radius, point
     );
 
     const distance = earthRadius * centralAngle;
-    console.log(distance)
     return distance <= radius;
 }
 
@@ -66,38 +68,14 @@ const createSqlInput = (obj, request) => {
   }
 };
 
-const getCheDoByPostId = async (postId, request) => {
-
-    const sqlQuery = `select * from Web_Post_CheDo where IDPost = @PostId${postId}`
-    let sqlQuery1 = 'select IDCheDo as id, icon, ten, href from Web_CheDo where '
-
-    const res = await request.query(sqlQuery)
-
-    const listCheDo = res.recordset[0].ListCheDo.split(',').map(Number)
-    sqlQuery1 += generateWhereOrSql("IDCheDo",listCheDo, request)
-    const res1 = await request.query(sqlQuery1)
-    return (res1.recordset)
-}
-
-const getViTriTuyenDungByPostId = async (postId, request) => {
-
-    const sqlQuery = `select ViTriTuyenDung from Web_Post_ViTriTuyenDung where IDPost = @PostId${postId}`
-    let sqlQuery1 = 'select id, icon, ten, href from Web_ViTriTuyenDung where '
-
-    const res = await request.query(sqlQuery)
-
-    const listViTri = res.recordset.map(item => Number(item.ViTriTuyenDung)); 
-    sqlQuery1 += generateWhereOrSql("id",listViTri, request)
-    const res1 = await request.query(sqlQuery1)
-    return (res1.recordset)
-}
-
 router.get('/', async (req,res) => {
     
     const request = new sql.Request();
 
     const queryJson = req.query
     createSqlInput(queryJson, request)
+    request.input('notfound', sql.Int, -1);
+
     
     try {
         const jobs = await getJobs(request)
@@ -119,6 +97,7 @@ router.get('/postId/:id', async (req,res) => {
 
     const id = req.params.id
     request.input('id', sql.BigInt, id)
+    request.input('notfound', sql.Int, -1);
 
     try {
 
@@ -144,8 +123,8 @@ router.get('/postId/:id', async (req,res) => {
             request.input(`PostId${id}`, sql.Int, id)
             const res3 = await getCheDoByPostId(id,request)
             const res4 = await getViTriTuyenDungByPostId(id, request)
-            
             tuyendung = res1.recordset[0]
+            
             tuyendung['chitietcongviec'] = res2.recordset[0]
             tuyendung['cheDo'] = res3
             tuyendung['viTriTuyenDung']=res4
@@ -193,6 +172,9 @@ router.get('/category/:category', async(req, res) => {
                 request.input(`PostId${tin.id}`, sql.Int, tin.id)
                 const res2 = await getCheDoByPostId(tin.id,request)
                 const res3 = await getViTriTuyenDungByPostId(tin.id, request)
+                const res4 = await getCoordinateByPostId(tin.id, request)
+                tuyendung[index]['lat'] = res4.lat
+                tuyendung[index]['lng']=res4.lng
                 tuyendung[index]['cheDo'] = res2
                 tuyendung[index]['viTriTuyenDung']=res3
             }
@@ -236,6 +218,9 @@ router.get('/positions/:position', async (req, res) => {
                 request.input(`PostId${tin.id}`, sql.Int, tin.id)
                 const res2 = await getCheDoByPostId(tin.id,request)
                 const res3 = await getViTriTuyenDungByPostId(tin.id, request)
+                const res4 = await getCoordinateByPostId(tin.id, request)
+                tuyendung[index]['lat'] = res4.lat
+                tuyendung[index]['lng']=res4.lng
                 tuyendung[index]['cheDo'] = res2
                 tuyendung[index]['viTriTuyenDung']=res3
             }
@@ -248,38 +233,6 @@ router.get('/positions/:position', async (req, res) => {
     }
 })
 
-router.post('/extractFile',upload.single('file'), async (req, res) => {
-    
-    try {
-        if (!req.file) {
-            return res.status(400).json({ message: 'No file uploaded.' });
-        }
-        else {
-            if(req.file.filename.includes('.docx')){
-                const result = await extractFileWordToObject(req.file.path)
-                res.status(200).json({
-                    success: true, data: result
-                })
-            }
-            else {const result = await toObject(req.file.path)
-                res.status(200).json({
-                    success: true, data: result
-                })
-            }
-        
-            fs.unlink(req.file.path, (err) => {
-                if (err) {
-                    console.error('Error deleting file:', err);
-                }
-                /* console.log(`File: ${req.file.filename} deleted successfully`); */
-            });
-        }
-    }
-    catch (error) {
-        console.log(error)
-        res.status(500).json({success: false, message: 'Internal server error!'})
-    }
-})
 
 router.get('/coordinate', async (req,res) => {
     
@@ -291,8 +244,8 @@ router.get('/coordinate', async (req,res) => {
         const jobs = await getJobs(request)
         if(jobs === -1) res.status(400).json({success: false, message: 'There are no jobs yet!'})
         else{
-            console.log(coordinatesInCircleRange(coor.lat, coor.log, coor.radius, 20.835573156514175, 105.58813264504804))
-            res.status(200).json({success: true, jobs: jobs})
+            const newJpbs = jobs.filter(item=>coordinatesInCircleRange(coor.lat, coor.lng, coor.radius, item.lat, item.lng))
+            res.status(200).json({success: true, jobs: newJpbs})
         }
         
     }
@@ -304,6 +257,125 @@ router.get('/coordinate', async (req,res) => {
 
 })
 
+router.post('/toado', async(req, res) => {
+    const request = new sql.Request()
+
+    try {
+        const {postId, address} = req.body
+        const coor = await getCoordinates(address)
+        request.input('IDPost',sql.BigInt, postId)
+        request.input('lat',sql.Float, coor.lat)
+        request.input('lng',sql.Float, coor.lng)
+    
+        await createPostToaDo(request)
+        res.status(200).json({success: true, message: "Successfully!"})
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+})
+router.delete('/toado', async(req, res) => {
+    const request = new sql.Request()
+
+    try {
+        const {postId} = req.body
+        request.input('IDPost',sql.BigInt, postId)
+    
+        const result = await deletePostToaDo(request)
+        console.log(result)
+        res.status(200).json({success: true, message: "Successfully!"})
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+})
+
+
+router.post('/category', async(req, res) => {
+    const request = new sql.Request()
+
+    try {
+        const {postId, categoryId} = req.body
+        request.input('IDPost',sql.BigInt, postId)
+        request.input('cateId',sql.BigInt, categoryId)
+    
+        await createPostCategory(request)
+        res.status(200).json({success: true, message: "Successfully!"})
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+})
+
+router.delete('/category', async(req, res) => {
+    const request = new sql.Request()
+
+    try {
+        const {postId, categoryId} = req.body
+        request.input('IDPost',sql.BigInt, postId)
+        request.input('cateId',sql.BigInt, categoryId)
+    
+        await deletePostCategory(request)
+        res.status(200).json({success: true, message: "Successfully!"})
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+})
+
+router.delete('/delete-all-category', async(req, res) => {
+    const request = new sql.Request()
+
+    try {
+        const {postId} = req.body
+        request.input('IDPost',sql.BigInt, postId)
+    
+        await deleteOnePostCategory(request)
+        res.status(200).json({success: true, message: "Successfully!"})
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+})
+
+
+router.post('/new-post', verifyAccessToken, async(req, res) => {
+    const request = new sql.Request()
+
+    request.input('IDPart', sql.Int, 4)
+    request.input('userId', sql.Int, req.userId)
+
+    try {
+        const result = await createNewPost(request)
+        if(result.length>0) res.status(200).json({success: true, post: result[0]})
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+})
+
+router.put('/:id', verifyAccessToken, async(req,res) => {
+    const request = new sql.Request()
+
+    const IDPost = req.params.id
+    request.input('IDPost', sql.Int, IDPost)
+    request.input('userId', sql.Int, req.userId)
+
+    try {
+        const result = await createNewPost(request)
+        if(result.length>0) res.status(200).json({success: true, post: result[0]})
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+})
 
 module.exports = router
 

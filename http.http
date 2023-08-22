@@ -14,7 +14,7 @@ Content-Type: application/json
 Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MDg4MjYzMiwiZXhwIjoxNjkxNDg3NDMyfQ.KeUD2S9sSqpaO2LW68IIXPgHVD93lOJX_21oQFp84xA
 
 {
-    "username": "Cx123456789102",
+    "username": "sx123456789102",
     "password": "123456"
 }
 
@@ -85,10 +85,8 @@ GET http://localhost:5000/api/user/resume/personal-detail/8
 GET http://localhost:5000/api/user/resume/attack-resume/8
 
 ###
-Post http://localhost:5000/api/post/extractFile
+Post http://localhost:5000/api/file/extractFile
 
-###
-Post http://localhost:5000/api/post/extractFilepdf
 
 ###
 GET http://localhost:5000/api/post/coordinate
@@ -96,6 +94,63 @@ Content-Type: application/json
 
 {
     "lat": 20.90692732755825,
-    "log": 105.57861328125001,
+    "lng": 105.57861328125001,
     "radius": 18965.728225521776
 }
+
+###
+get http://localhost:5000/api/address/coordinates
+Content-Type: application/json
+
+{
+    "address": "334 Tân Sơn Nhì"
+}
+
+###
+POST http://localhost:5000/api/post/toado
+Content-Type: application/json
+
+{
+    "postId": 125,
+    "address": "330 Lê Thị Riêng, Thới An"
+}
+
+###
+DELETE  http://localhost:5000/api/post/toado
+Content-Type: application/json
+
+{
+    "postId": 125
+}
+###
+POST http://localhost:5000/api/post/category
+Content-Type: application/json
+
+{
+    "postId": 124,
+    "categoryId": 6
+}
+
+###
+DELETE http://localhost:5000/api/post/category
+Content-Type: application/json
+
+{
+    "postId": 124,
+    "categoryId": 6
+}
+
+###
+DELETE http://localhost:5000/api/post/delete-all-category
+Content-Type: application/json
+
+{
+    "postId": 124
+}
+
+###
+POST http://localhost:5000/api/post/new-post
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+
