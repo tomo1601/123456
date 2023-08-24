@@ -11,6 +11,9 @@ const employeeRouter = require('./routes/NguoiTimViec')
 const companyRouter = require('./routes/Company')
 const addressRouter = require('./routes/address')
 const fileRouter = require('./routes/extractFile')
+const cheDoRouter = require('./routes/chedo')
+const viTriTuyenDungRouter = require('./routes/viTriTuyenDung')
+const danhMucRouter = require('./routes/catergory')
 
 const options = {
     definition: {
@@ -74,6 +77,11 @@ app.use('/api/user', employeeRouter)
 app.use('/api/ntd', companyRouter)
 app.use('/api/address', addressRouter)
 app.use('/api/file', fileRouter)
+app.use('/api/chedo', cheDoRouter)
+app.use('/api/vttd', viTriTuyenDungRouter)
+app.use('/api/danhmuc',danhMucRouter)
+
+
 
 
 app.listen(5000, () => {

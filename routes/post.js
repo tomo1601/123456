@@ -3,7 +3,7 @@ const router = express.Router()
 const sql = require("mssql");
 /* const multer = require('multer'); */
 const {getCheDoByPostId, getViTriTuyenDungByPostId, getJobs, createPostCategory, createPostToaDo, deletePostToaDo,deleteOneCategory,  deleteOnePostCategory,
-       getCoordinateByPostId, createNewPost, updatePost
+       getCoordinateByPostId, createNewPost, updatePost, createPostCheDo, deleteostCheDo, 
 } 
     = require('../models/Jobs')
 
@@ -143,6 +143,9 @@ router.get('/category/:category', async(req, res) => {
 
     const request = new sql.Request();
     const category = '/'+req.params.category
+    console.log(category)
+    request.input('notfound', sql.Int, -1);
+
 
     try {
         const sqlQuery = " select distinct b.IDPost as id "+
@@ -190,6 +193,7 @@ router.get('/category/:category', async(req, res) => {
 router.get('/positions/:position', async (req, res) => {
     const request = new sql.Request();
     const position = '/'+req.params.position
+    
 
     try {
         const sqlQuery = " select distinct b.IDPost as id "+
@@ -198,6 +202,8 @@ router.get('/positions/:position', async (req, res) => {
                          " where a.href = @category"
     
         request.input('category', sql.NText, category)
+        request.input('notfound', sql.Int, -1);
+
         const result = await request.query(sqlQuery)
         const idArray = result.recordset.map(item => Number(item.id)); 
 
@@ -364,12 +370,49 @@ router.put('/:id', verifyAccessToken, async(req,res) => {
     const request = new sql.Request()
 
     const IDPost = req.params.id
-    request.input('IDPost', sql.Int, IDPost)
+    const {href, PostTitle} = req.body
+    request.input('IDPost', sql.BigInt, IDPost)
     request.input('userId', sql.Int, req.userId)
+    request.input('href', sql.NText, href)
+    request.input('PostTitle', sql.NText, PostTitle)
 
     try {
-        const result = await createNewPost(request)
-        if(result.length>0) res.status(200).json({success: true, post: result[0]})
+        const result = await updatePost(request)
+        if(result.length>0) res.status(200).json({success: true, message: "successfully"})
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+})
+
+router.post('/chedo', verifyAccessToken, async(req,res) => {
+    const request = new sql.Request()
+
+    const {IDPost, cheDo} = req.body
+    request.input('IDPost', sql.BigInt, IDPost)
+    request.input('cheDo', sql.Int, cheDo)
+
+    try {
+        const result = await createPostCheDo(request)
+        if(result.length>0) res.status(200).json({success: true,  message: "successfully"})
+    }
+    catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message: 'Internal server error!'})
+    }
+})
+
+router.delete('/chedo', verifyAccessToken, async(req,res) => {
+    const request = new sql.Request()
+
+    const {IDPost, cheDo} = req.body
+    request.input('IDPost', sql.BigInt, IDPost)
+    request.input('cheDo', sql.Int, cheDo)
+
+    try {
+        const result = await deleteostCheDo(request)
+        if(result.length>0) res.status(200).json({success: true,  message: "Deleted successfully"})
     }
     catch (error) {
         console.log(error)
@@ -484,7 +527,7 @@ module.exports = router
 
 /**
  * @swagger
- * /api/post/{id}:
+ * /api/post/postId/{id}:
  *   get:
  *     summary: Get details of a post by ID
  *     tags: [Posts]
@@ -579,6 +622,201 @@ module.exports = router
  *                         type: string
  *       400:
  *         description: No posts found with the given ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */
+/**
+ * @swagger
+ * /api/post/category/{category}:
+ *   get:
+ *     summary: Get posts by category
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: category
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Category name
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 posts:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       logoDaiDien:
+ *                         type: string
+ *                       href:
+ *                         type: string
+ *                       tenTuyenDung:
+ *                         type: string
+ *                       diaChi:
+ *                         type: string
+ *                       mucLuong:
+ *                         type: string
+ *                       thoiHanNopHoSo:
+ *                         type: string
+ *                       congviec:
+ *                         type: string
+ *                       lat:
+ *                         type: number
+ *                       lng:
+ *                         type: number
+ *                       cheDo:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: integer
+ *                             icon:
+ *                               type: string
+ *                             ten:
+ *                               type: string
+ *                             href:
+ *                               type: string
+ *                       viTriTuyenDung:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: integer
+ *                             icon:
+ *                               type: string
+ *                             ten:
+ *                               type: string
+ *                             href:
+ *                               type: string
+ *       400:
+ *         description: No posts found in this category
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */
+
+/**
+ * @swagger
+ * /api/post/positions/{position}:
+ *   get:
+ *     summary: Get posts by position
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: position
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: position name
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 posts:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       logoDaiDien:
+ *                         type: string
+ *                       href:
+ *                         type: string
+ *                       tenTuyenDung:
+ *                         type: string
+ *                       diaChi:
+ *                         type: string
+ *                       mucLuong:
+ *                         type: string
+ *                       thoiHanNopHoSo:
+ *                         type: string
+ *                       congviec:
+ *                         type: string
+ *                       lat:
+ *                         type: number
+ *                       lng:
+ *                         type: number
+ *                       cheDo:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: integer
+ *                             icon:
+ *                               type: string
+ *                             ten:
+ *                               type: string
+ *                             href:
+ *                               type: string
+ *                       viTriTuyenDung:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: integer
+ *                             icon:
+ *                               type: string
+ *                             ten:
+ *                               type: string
+ *                             href:
+ *                               type: string
+ *       400:
+ *         description: No posts found in this category
  *         content:
  *           application/json:
  *             schema:

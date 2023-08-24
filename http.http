@@ -87,6 +87,8 @@ GET http://localhost:5000/api/user/resume/attack-resume/8
 ###
 Post http://localhost:5000/api/file/extractFile
 
+// --------------------------------------------------------------------------------------------------------------------------------------------
+
 
 ###
 GET http://localhost:5000/api/post/coordinate
@@ -149,8 +151,145 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:5000/api/post/new-post
+PUT http://localhost:5000/api/post/124
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+{
+    "href": "/cong-ty-abc",
+    "PostTitle": "Tuyển dụng nhân sự" 
+}
+
+
+###
+POST http://localhost:5000/api/post/chedo
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+{
+    "IDPost": 237,
+    "cheDo": 1
+}
+
+
+###
+DELETE  http://localhost:5000/api/post/chedo
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+{
+    "IDPost": 237,
+    "cheDo": 1
+}
+
+//Bang che do--------------------------------------------------------------------------------------------------------------------------------------------
+
+###
+Get http://localhost:5000/api/chedo
+
+###
+Get http://localhost:5000/api/chedo/1
+
+###
+Get http://localhost:5000/api/chedo/post/123
+
+###
+POst http://localhost:5000/api/chedo
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+{
+    "ten": "Lương tháng 14",
+    "icon": "Lương",
+    "href": "/luong-thang-14"
+}
+
+###
+PUT http://localhost:5000/api/chedo/6
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+{
+    "ten": "Thưởng tết2",
+    "icon": "Lương",
+    "href": "/luong-thang-14"
+}
+
+###
+DELETE  http://localhost:5000/api/chedo/5
 Content-Type: application/json
 Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
 
 
+//Bang Vị trí tuyển dụng--------------------------------------------------------------------------------------------------------------------------------------------
+
+###
+Get http://localhost:5000/api/vttd
+
+###
+Get http://localhost:5000/api/vttd/3
+
+###
+Get http://localhost:5000/api/vttd/post/123
+
+###
+POst http://localhost:5000/api/vttd
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+{
+    "ten": "DepOps",
+    "icon": "developers",
+    "href": "/cong-viec-dev"
+}
+
+###
+PUT http://localhost:5000/api/vttd/3
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+{
+    "ten": "DepOps",
+    "icon": "setting-icon",
+    "href": "/cong-viec-dev"
+}
+
+###
+DELETE  http://localhost:5000/api/vttd/3
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+//Bảng Danh mục công việc --------------------------------------------------------------------------------------------------------------------------------------------
+
+###
+Get http://localhost:5000/api/danhmuc
+
+###
+Get http://localhost:5000/api/danhmuc/2
+
+###
+POst http://localhost:5000/api/danhmuc
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+{
+    "ten": "Bank",
+    "icon": "bank-icon",
+    "href": "/cong-viec-ngan-hang"
+}
+
+###
+PUT http://localhost:5000/api/danhmuc/9
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+{
+    "ten": "Bank",
+    "icon": "bank-and-money",
+    "href": "/cong-viec-ngan-hang"
+}
+
+###
+DELETE  http://localhost:5000/api/danhmuc/9
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk

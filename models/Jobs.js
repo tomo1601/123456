@@ -1,61 +1,7 @@
 const sql = require("mssql");
 
-
-// generate to where or
-const generateWhereOrSql = (nameCol, arr, request, isRenameTale, name) => {
-    const arrays = arr;
-    let queryWhere = '';
-    const newNameCol = isRenameTale?`${name}.${nameCol}`:nameCol
-  
-    if (arrays.length === 0) {
-      queryWhere += ` ${nameCol} = @notfound`;
-    } else {
-      for (const [index, id] of arrays.entries()) {
-        if(index>0) {
-            queryWhere += ` or ${newNameCol} = @${nameCol}${id} `;
-            request.input(`${nameCol}${id}`, sql.Int, id);
-        }
-        else {
-            queryWhere += ` ${newNameCol} = @${nameCol}${id} `;
-            request.input(`${nameCol}${id}`, sql.Int, id);
-        }
-      }
-    }
-    return queryWhere;
-};
-
-const createSqlInput = (obj, request) => {
-    const keys = Object.keys(obj);
-    for (const key of keys) {
-        request.input(`${key}`, sql.NText, obj[key])
-    }
-
-  };
-  
-const getCheDoByPostId = async (postId, request) => {
-
-  const sqlQuery = `select cheDo from Web_Post_CheDo where IDPost = @PostId${postId}`
-  let sqlQuery1 = 'select IDCheDo as id, icon, ten, href from Web_CheDo where '
-  
-  const res = await request.query(sqlQuery)  
-  const listCheDo = res.recordset.map(obj => obj.cheDo)
-  sqlQuery1 += generateWhereOrSql("IDCheDo",listCheDo, request)
-  const res1 = await request.query(sqlQuery1)
-  return (res1.recordset)
-}
-
-const getViTriTuyenDungByPostId = async (postId, request) => {
-  
-  const sqlQuery = `select ViTriTuyenDung from Web_Post_ViTriTuyenDung where IDPost = @PostId${postId}`
-  let sqlQuery1 = 'select id, icon, ten, href from Web_ViTriTuyenDung where '
-  
-  const res = await request.query(sqlQuery)
-  
-  const listViTri = res.recordset.map(item => Number(item.ViTriTuyenDung)); 
-  sqlQuery1 += generateWhereOrSql("id",listViTri, request)
-  const res1 = await request.query(sqlQuery1)
-  return (res1.recordset)
-}
+const {getCheDoByPostId} =require('./CheDo')
+const {getViTriTuyenDungByPostId} =require('./VitriTuyenDung')
 
 const getCoordinateByPostId = async(postId, request) => {
   const sqlQuery = `select lat, lng from Web_Post_ToaDo where IDPost = @PostId${postId}`
@@ -66,11 +12,12 @@ const getCoordinateByPostId = async(postId, request) => {
 
 const getJobs = async (request) => {
 
-  let sqlQuery = 'select a.IDPost as id, f.logoDaiDien, a.href, c.companyName as tenTuyenDung, d.address as diaChi, e.mucLuong, e.thoiHanNopHoSo, a.PostTitle as congviec'+ 
+  let sqlQuery = 'select a.IDPost as id, f.logoDaiDien, a.href, c.companyName as tenTuyenDung, d.address as diaChi, e.mucLuong, g.thoiHanNopHoSo, a.PostTitle as congviec'+ 
   ' from Web_Post a'+
   ' left join Web_User_Info_Company c on a.userId = c.userId' +
   ' left join Web_User_Info_Contact d on a.userId = d.userId' +
-  ' left join Web_Post_Info e on a.IDPost = e.IDPost' +
+  ' left join Web_Post_MucLuong e on a.IDPost = e.IDPost' +
+  ' left join Web_Post_ThoiHanNopHoSo g on a.IDPost = g.IDPost' +
   ' left join Web_User_HinhDaiDien f on a.userId = f.userId'
 
   let tuyendung
@@ -87,8 +34,8 @@ const getJobs = async (request) => {
         const res2 = await getCheDoByPostId(tin.id,request)
         const res3 = await getViTriTuyenDungByPostId(tin.id, request)
         const res4 = await getCoordinateByPostId(tin.id, request)
-        tuyendung[index]['lat'] = res4.lat
-        tuyendung[index]['lng']=res4.lng
+        tuyendung[index]['lat'] = res4?res4.lat:null
+        tuyendung[index]['lng']=res4?res4.lng:null
         tuyendung[index]['cheDo'] = res2
         tuyendung[index]['viTriTuyenDung']=res3
     }
@@ -107,15 +54,27 @@ const createNewPost = async(request) => {
 
 const updatePost = async(request) => {
   const sqlQuery = "Update Web_Post "+ 
-                   " Set href=@href, PostTitle=@PostTitle"
-                   " OUTPUT INSERTED.IDPost, INSERTED.lat, INSERTED.lng" +
+                   " Set href=@href, PostTitle=@PostTitle "+
+                   " OUTPUT INSERTED.IDPost, INSERTED.href, INSERTED.PostTitle " +
                    " where IDPost=@IDPost and userId=@userId"
   const res = await request.query(sqlQuery)
   return (res.recordset)
 }
 
 const createPostCheDo = async(request) => {
+  const sqlQuery = "INSERT INTO Web_Post_CheDo (IDPost, cheDo) " +
+  " OUTPUT INSERTED.IDPost, INSERTED.cheDo" +
+  " VALUES (@IDPost, @cheDo)"
+  const res = await request.query(sqlQuery)
+  return (res.recordset)
+}
 
+const deleteostCheDo = async(request) => {
+  const sqlQuery = "Delete from Web_Post_CheDo " +
+  " OUTPUT Deleted.IDPost, Deleted.cheDo" +
+  " where IDPost=@IDPost and cheDo=@cheDo"
+  const res = await request.query(sqlQuery)
+  return (res.recordset)
 }
 
 const createPostToaDo = async(request) => {
@@ -159,7 +118,10 @@ const deleteOnePostCategory = async(request) => {
   return (res.recordset)
 }
 
+
+
+
 module.exports = {
     getCheDoByPostId, getViTriTuyenDungByPostId, getJobs, createPostToaDo, createPostCategory, deletePostToaDo, deleteOneCategory, deleteOnePostCategory, createNewPost,
-    updatePost, getCoordinateByPostId,
+    updatePost, getCoordinateByPostId, createPostCheDo, deleteostCheDo
 }
