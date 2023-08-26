@@ -349,7 +349,7 @@ const generationPattern = (arr) => {
     ]
   
     const salary = extractSalaryInfo(patterns, text)
-    return salary
+    return {min: Number(salary.min), max: Number(salary.max)}
   };
 
 const createRegexFromList = (array) => {

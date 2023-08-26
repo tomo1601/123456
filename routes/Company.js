@@ -35,7 +35,6 @@ router.get('/company-profile/:id', async(req, res) => {
         console.log(error)
         res.status(500).json({success: false, message: 'Internal server error!'})
     }
-
 })
 
 module.exports = router

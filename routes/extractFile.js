@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const fs = require("fs");
 const multer = require('multer');
 const {extractFileWordToObject} = require('../middlewares/extractedFIleToObject');
 const {toObject} = require('../middlewares/extarctedPdfFile')
@@ -49,3 +50,62 @@ router.post('/extractFile',upload.single('file'), async (req, res) => {
 })
 
 module.exports = router
+
+/**
+ * @swagger
+ * /api/file/extractFile:
+ *   post:
+ *     summary: Extract data from uploaded file
+ *     tags: [Files]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:  # Replace these properties with actual properties returned by your API
+ *                     exampleProperty1:
+ *                       type: string
+ *                     exampleProperty2:
+ *                       type: number
+ *                     exampleProperty3:
+ *                       type: boolean
+ *       400:
+ *         description: No file uploaded or invalid file format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */

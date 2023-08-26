@@ -319,5 +319,4 @@ router.get('/resume/attack-resume/:id', async (req, res) => {
     }
 })
 
-
 module.exports = router

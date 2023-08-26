@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const sql = require("mssql");
+const {verifyAccessToken} = require('../middlewares/jwt_services')
 const {
     getAllViTriTuyenDung, GetViTriTuyenDungById,  createNewViTriTuyenDung,updateViTriTuyenDung,deleteViTriTuyenDung,getViTriTuyenDungByPostId,
 } = require("../models/VitriTuyenDung");
@@ -47,7 +48,7 @@ router.get("/post/:id", async (req, res) => {
 });
 
 
-router.post("/", async (req, res) => {
+router.post("/",verifyAccessToken, async (req, res) => {
     const request = new sql.Request();
 
     const {ten, icon, href} = req.body

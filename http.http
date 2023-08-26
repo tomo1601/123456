@@ -95,7 +95,7 @@ GET http://localhost:5000/api/post/coordinate
 Content-Type: application/json
 
 {
-    "lat": 20.90692732755825,
+    "lat": 20.30692732755825,
     "lng": 105.57861328125001,
     "radius": 18965.728225521776
 }
@@ -105,7 +105,7 @@ get http://localhost:5000/api/address/coordinates
 Content-Type: application/json
 
 {
-    "address": "334 Tân Sơn Nhì"
+    "address": "Co.opMart BMC, Đường Lũy Bán Bích, Phu Tho Hoa Ward, Hồ Chí Minh City, Vietnam"
 }
 
 ###
@@ -293,3 +293,8 @@ Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhd
 DELETE  http://localhost:5000/api/danhmuc/9
 Content-Type: application/json
 Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhdCI6MTY5MjY5NjI1MSwiZXhwIjoxNjkzMzAxMDUxfQ.oDQt0to4VQVH7buqFq3i4sz0T0RVQnDyIVL21apbqqk
+
+
+###
+
+Get http://localhost:5000/api/module/module.tuyendung?href=thuyen-dung-nhan-vien-kinh-doanh-tai-thanh-pho-hcm&id=1

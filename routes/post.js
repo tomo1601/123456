@@ -29,21 +29,19 @@ const generateWhereOrSql = (nameCol, arr, request, isRenameTale, name) => {
   
     if (arrays.length === 0) {
       queryWhere += ` ${nameCol} = @notfound`;
-      request.input('notfound', sql.Int, -1);
     } else {
       for (const [index, id] of arrays.entries()) {
+        if(!request.parameters.hasOwnProperty(nameCol+id)) request.input(`${nameCol}${id}`, sql.Int, id);
         if(index>0) {
             queryWhere += ` or ${newNameCol} = @${nameCol}${id} `;
-            request.input(`${nameCol}${id}`, sql.Int, id);
         }
         else {
             queryWhere += ` ${newNameCol} = @${nameCol}${id} `;
-            request.input(`${nameCol}${id}`, sql.Int, id);
         }
       }
     }
     return queryWhere;
-};
+  };
 
 const coordinatesInCircleRange = (centerLongitude, centerLatitude, radius, pointLongitude, pointLatitude) =>{
     const earthRadius = 6371000; // Đường kính trái đất trong mét
@@ -143,7 +141,6 @@ router.get('/category/:category', async(req, res) => {
 
     const request = new sql.Request();
     const category = '/'+req.params.category
-    console.log(category)
     request.input('notfound', sql.Int, -1);
 
 
@@ -243,6 +240,7 @@ router.get('/positions/:position', async (req, res) => {
 router.get('/coordinate', async (req,res) => {
     
     const request = new sql.Request();
+    request.input('notfound', sql.Int, -1);
 
     const coor = req.body
    
@@ -250,8 +248,8 @@ router.get('/coordinate', async (req,res) => {
         const jobs = await getJobs(request)
         if(jobs === -1) res.status(400).json({success: false, message: 'There are no jobs yet!'})
         else{
-            const newJpbs = jobs.filter(item=>coordinatesInCircleRange(coor.lat, coor.lng, coor.radius, item.lat, item.lng))
-            res.status(200).json({success: true, jobs: newJpbs})
+            const newJobs = jobs.filter(item=>coordinatesInCircleRange(coor.lat, coor.lng, coor.radius, item.lat, item.lng))
+            res.status(200).json({success: true, jobs: newJobs})
         }
         
     }

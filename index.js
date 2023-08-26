@@ -14,6 +14,7 @@ const fileRouter = require('./routes/extractFile')
 const cheDoRouter = require('./routes/chedo')
 const viTriTuyenDungRouter = require('./routes/viTriTuyenDung')
 const danhMucRouter = require('./routes/catergory')
+const dynamicRouter = require('./routes/DynamicRouter')
 
 const options = {
     definition: {
@@ -80,6 +81,7 @@ app.use('/api/file', fileRouter)
 app.use('/api/chedo', cheDoRouter)
 app.use('/api/vttd', viTriTuyenDungRouter)
 app.use('/api/danhmuc',danhMucRouter)
+app.use('/api/module',dynamicRouter)
 
 
 
