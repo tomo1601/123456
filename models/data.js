@@ -322,6 +322,8 @@ const keywordData = {
     "mô tả vị trí:",
     "Mô tả vị trí",
     "mô tả vị trí",
+    "Công việc:",
+    "công việc:",
     "Phạm vi công việc:",
     "phạm vi công việc:",
     "Phạm vi công việc",

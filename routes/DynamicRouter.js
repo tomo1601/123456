@@ -4,7 +4,8 @@ const router = express.Router()
 router.get("/:module", async(req, res) => {
     const module = req.params.module
     const query = req.query
-    res.redirect('/api/post')
+    const path = `/api/${module}`
+    res.redirect(path)
     /* res.status(200).json({module: module, query: query}) */
 })
 
@@ -27,37 +28,37 @@ module.exports = router
  *         name: id
  *         schema:
  *           type: integer
- *         description: ID parameter
+ *         description: ID
  *       - in: query
  *         name: href
  *         schema:
  *           type: string
- *         description: Href parameter
+ *         description: Href
  *       - in: query
  *         name: linhvuc
  *         schema:
  *           type: string
- *         description: Linh vuc parameter
+ *         description: Linh vuc
  *       - in: query
  *         name: thanhpho
  *         schema:
  *           type: string
- *         description: Thanh pho parameter
+ *         description: Thanh pho
  *       - in: query
  *         name: mucluong
  *         schema:
  *           type: string
- *         description: Muc luong parameter
+ *         description: Muc luong
  *       - in: query
  *         name: level
  *         schema:
  *           type: string
- *         description: Level parameter
+ *         description: Level
  *       - in: query
  *         name: loaicongviec
  *         schema:
  *           type: string
- *         description: Loai cong viec parameter
+ *         description: Loai cong viec
  *     responses:
  *       200:
  *         description: Successful response

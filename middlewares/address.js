@@ -6,6 +6,7 @@ const getCoordinates = async(address) => {
 
   try {
     const response = await axios.get(geocodeApiUrl);
+    console.log(response.data)
     const result = response.data.results[0];
     
     if (result) {

@@ -105,7 +105,7 @@ get http://localhost:5000/api/address/coordinates
 Content-Type: application/json
 
 {
-    "address": "Co.opMart BMC, Đường Lũy Bán Bích, Phu Tho Hoa Ward, Hồ Chí Minh City, Vietnam"
+    "address": "Hồ chí minh"
 }
 
 ###
@@ -296,5 +296,4 @@ Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjgsImlhd
 
 
 ###
-
 Get http://localhost:5000/api/module/module.tuyendung?href=thuyen-dung-nhan-vien-kinh-doanh-tai-thanh-pho-hcm&id=1
